@@ -1,0 +1,263 @@
+xrandr --output eDP-1 --off --output HDMI-1 --auto					#Skift til skærm nr. 2 med HDMI
+xrandr --output HDMI-1 --off --output eDP-1 --auto					#omvendt --^ 
+xrandr --output <skærmnavn eks HDMI-2> --auto						#Tænd skærm med xrandr
+arandr											#Kan gøre ovenstående visuelt
+
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target	#PC suspender ikke når den lukkes sammen. unmask for at undo
+
+nmtui connect										#connect til WIFI
+
+rar a <outputfil>.rar <inputfilsti>							#Lav rar-arkiv med en bestem fil eller mappe. Brug da stien
+unrar l <fil>.rar									#Viser indholdet af arkivet 
+unrar t <fil>.rar									#Test arkivet
+
+dd if=/dev/zero of=/dev/<USBDevice>							#Skriv disk med nuller (VÆR FORSIGTIG, vælg den rigtige disk!) 
+sudo mkfs.ntfs -Q /dev/sdb1								#Skriver ntfs på partitionen af USB'en med -Q for hurtig. Tab ved mkfs for at se andre filsystemtyper 
+sudo dd if=/home/a/<EKSLinux.iso> of=/dev/<Device> bs=4M status=progress		#Skriver en iso til eksempelvis USB. Vær OBS på at alt slettes på USB'et
+
+sensors											#Temperaturer
+
+sudo openvpn /home/a/VPN/Netherlands.ovpn						#Connect til VPN
+sudo nano /etc/netplan/01-netcfg.yaml							#Hvis VPN ikke virker, så ret DNS'en
+sudo nano /etc/resolv.conf								# --//--
+
+SEEDBOKS:
+Installation Guide: 
+https://freedif.org/flood-modern-web-ui-for-rtorrent
+
+ssh a@{IP_PÅ_Seed} -X									#SSH ind i maskinen med x-forwarding
+chromium-browser &>/dev/null &								#Starter Chrome så command-line stadig kan bruges
+http://localhost:3000									#I Chrome for at bruge seed-boksen. Brugernavn: a Kode: R.............
+
+OVERFØRSEL:
+scp /path/to/file username@a:/path/to/destination					#Kopier fra Linux til anden Linux
+
+OVERFØRE FLERE FILER:
+mc											#SFTP-overførsel
+tab											#for at skifte mellem vinduer
+shift											#for at vælge filer som skal flyttes
+F5											#for at kopiere filere over, 
+F6											#for at flytte dem
+Promten											# i promten skriver du eks. bruger1@192.168.12.3 efterfulgt af kode
+
+youtube-dl -q -o- "https://www.youtube.com/watch?v=YduZqu3QpSw" | mplayer -vo aa -	#Afspil >YT-video i ASCII
+youtube-dl --extract-audio --audio-format mp3 -o "%(title)s.%(ext)s" "youtube link her"	#Download youtubevideor, skriv -i, hvis den melder fejl. Husk at fjerne de "/" som ikke skal være i linket (copy paste error)
+
+TMUX:
+
+tmux
+ctrl+b											#
+ctrl+b %										#Sender tasttryk-kommando til tmux og laver nyt vindue med prompt
+ctrl+b d										#Detach'er tmux (programmer vil stadig være åbne)
+ctrl+b o										#Skifter mellem prompts'ne
+exit											#Lukker prompt'en (skrives i prompt'en)
+
+browsh											#Skal åbnes med lxterminal
+
+scrot											#Screenshot
+
+du -sh /<directory>									#Size of a directory
+
+@reboot root tmux new -d "openvpn /home/a/VPN/Netherlands.ovpn"				#I /etc/crontab kan man vælge hvornår bestemte kommmandoer/programmer skal køre. I dette eksempel køres vpn i tmux når PC'en startes
+
+
+SSH I VIRTUEL MASKINE (Som kører Linux):
+
+På den virtuelle maskine skal 
+du tilføje en ekstra ethernet-
+adapter, som skal være host- 
+only. Inde i den virtuelle
+maskine køres denne kommando:
+
+/etc/rc.d/init.d/network restart
+
+Den genstarter netværket på
+den virtuele maskine, hvilket
+burde give det nye interface 
+en ip-adresse. Tjek med 
+ifconfig om den har. Denne
+adresse bruges til at SSH ind
+i maskinen. Fra yderPC:
+
+ssh <brugernavn>@<IP-adresse> -X
+
+X-delen gør at X bliver forwarded 
+aka programmer kan åbnes remotely.
+
+Synology DiskStation:
+http://QuickConnect.to/SkoleBox
+
+sudo rsync --ignore-existing --exclude 'a/.cache*' -av -e ssh /home/ a@10.13.37.13::LinuxBackup27-09-2018/				#backup af alt til NAS-share. --ignore-existing gør at den ignorerer det som allerede findes af det samme. ---exclude ekskluderer noget, i denne, noget ligegyldigt cache 
+https://www.thegeekstuff.com/2011/01/rsync-exclude-files-and-folders/?utm_source=feedburner						#Link til smarte rsync funktioner
+
+watch -n <sekunder_mellem_loop> <kommando_til_loop>					#Loop en bestemt kommando	
+
+tb --<kommando> <note>									#Simpelt noteprogram
+
+
+
+
+MOUNTING NAS
+
+Make sure you have the nfs-common package installed:
+
+#sudo apt-get install nfs-common
+
+To mount an NFS, you first have to create the folder to which you want it to mount. Type this to create a directory:
+
+#sudo mkdir /mnt/<insertfoldername>
+
+Now, once that is created, you can mount the share. Type:
+
+#sudo mount -t nfs <IP Address>:/<DriveVolumeName>/<NameofShare> /mnt/<FolderyouCreated>
+
+What all this means:
+
+-t : Is used to tell the system that this is just an ordinary mount command. You use this when you do not have the drive information located in /etc/fstab
+nfs : Tells the type of share you are trying to mount.
+<IP Address>:/ : IP address of the drive you are trying to mount.
+<DriveVolumeName>/ : Volume Name of the actual hard drive that you want to mount. This defaults to DataVolume.
+<NameofShare> : The Share within the Volume of the hard drive that you want to mount.
+/mnt/<FolderyouCreated> : The location to which you want your share to be mounted. Remember that it is the folder that you already created.
+
+for i in {1..999}; do echo -n  "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" | lolcat; done
+
+for i in {1..9999}; do echo -n  "Det her er en test for at teste min test. Dette er en test. Test. Test. Tes" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Tes Test. Test. Test en er Dette. test min teste at for test en er her Det" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Det her er en test for at teste min test. Dette er en test. Test. Test. Tes" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Tes Test. Test. Test en er Dette. test min teste at for test en er her Det" | lolcat -a; sleep 1.5; done
+
+speedometer -tw <interface e.g. wlp1s0>
+
+vis											#Sound visualizer 
+
+VBoxManage modifyhd /home/a/VirtualBox\ VMs/Seed/Seed.vdi --resize 3000000		#Resize VBox-image til bestemt størrelse. I dette tilfælde 300 GB. Brug Gparted i VB'en til at få gavn af pladsen
+
+pulsemixer #Lyd
+
+ncdu #Se hvor meget alle directories fylder
+
+xinput --list										#liste over x-inputs (for at slukke nibble)
+xinput --disable 13									#Slukker ID 13, i dette tilfælde blå-sort-niblle. Skrevet ind i i3-config som startup (hvis ID-et ændres så noget ikke virker)
+
+.local/bin										#Scrips der flyttes til denne mappe kan eksekveres i dropdown-menues ved at skrive scriptets navn. Eksempelvis scriptet "SkolePC", hvilket også er navnet på scriptet. 																		
+
+/etc/crontab										#Lave kommandoer (el. scripts) der kører bestemte tidspunkter
+
+df -h | grep "Filesystem*\|/dev/sda1"
+
+rsync --verbose --archive --dry-run /oldisk/a/ /newdisk/a/		#Hvis mv bliver afbrudt kan man starte hvor den slap. Fjern --dry-run efter den har kørt første gang. Dry-run bruges til at teste om den kan gøre det, uden at den faktisk gør det. Tager et par sekunder.   
+
+Højre control for at slippe et VM-vindue 
+
+Højre control (den blå) + Fn + Venstre pil-task (Den blå Home)
+
++---------------------------------------------------------------+
+|								|
+|	VIRTUALBOX | VIRTUAL BOX | VIRTUALBOX | VM | VM|	|
+|								|
+|	For at få instillinger frem i en VM:			|
+|								|
+|	Left-Ctrl+Fn+Home(Left arrow)				|
+|								|
++---------------------------------------------------------------+
+
+kør program i nyt tmux-vindue, se .config/scripts/VPNScript.sh.bak og VPNofQbit.sh
+
+i8kctl fan - 1								#styre computerens blæser 1 = 2500 RPM, 2 = 4500 RPM
+
+$sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
+
++---------------------------------------------------------------------------------------+
+|											|
+|	So, the same-terminal way looks like this :					|
+|											|
+|	$ xinit firefox $* -- :0 vt$XDG_VTNR						|
+|											|
+|	The part after :0 is exactly used to avoid /dev/tty0 permissions issues.	|
+|	The other way, which requires elevated privileges, looks like this:		|
+|											|
+|	$ sudo xinit firefox $* -- :1							|
+|											|
+|	and will start X and Firefox inside it using /dev/tty1. For both commands	|
+|	we assume you're using /dev/tty0 AKA the first virtual console, accessible	| 
+|	with Ctrl + Alt + F1.								|
+|											|
++---------------------------------------------------------------------------------------+
+
+		
+			  TMUX WINDOWS-GUIDE FOR SCRIPTS
+			´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
++---------------------------------------------------------------------------------------+
+											|
+	I was trying to create a complex grid of panes and had to deal with		|
+	switching and splitting panes over and over again. Here are my learnings:	|
+											|
+	tmux new-session \;								|
+											|
+	Gets you started with a new session. To split it horizontal or vertical		|
+	use split-window -h or -v subsequently, like that:				|
+											|
+	tmux new-session \; split-window -v \; split-window -h \;			|
+	Creates 3 panes, like this:							|	
+											|			
+	+----------+									|
+	|          |									|
+	|----------|									|
+	|     |    |									|
+	+----------+									|
+											|
+	To run commands in that panes, just add them with the send-keys 'my-command'	| 
+	command and C-m which executes it:						|
+											|
+	tmux new-session \; \								|
+		send-keys 'tail -f /var/log/monitor.log' C-m \; \			|
+		split-window -v \; \							|
+		split-window -h \; \							|
+		send-keys 'top' C-m \;							|
+											|
+	And the resulting session should look like that.				|
+											|
+	+----------+									|
+	|  tail    |									|
+	|----------|									|
+	|    | top |									|
+	+----------+									|
+											|
+	Now I tried to again sub-divide the bottom left pane, so switching either back	|
+	using last-pane, or in more complex windows, with the select-pane -t 1 where 1	|
+	is the number of the pane in order created starting with 0.			|
+											|
+	tmux new-session \; \								|
+		send-keys 'tail -f /var/log/monitor.log' C-m \; \			|
+		split-window -v \; \							|
+		split-window -h \; \							|
+		send-keys 'top' C-m \; \						|
+		select-pane -t 1 \; \							|
+		split-window -v \; \							|
+		send-keys 'weechat' C-m \;						|
+											|
+	Does that. Basicaly knowing your way around with split-window and		| 
+	select-pane is all you need. It's also handy to pass with -p 75 a		|
+	percentage size of the pane created by split-window to have more		| 
+	control over the size of the panes.						|
+											|
+	tmux new-session \; \								|
+		send-keys 'tail -f /var/log/monitor.log' C-m \; \			|
+		split-window -v -p 75 \; \						|
+		split-window -h -p 30 \; \						|
+		send-keys 'top' C-m \; \						|
+		select-pane -t 1 \; \							|
+		split-window -v \; \							|
+		send-keys 'weechat' C-m \;						|
+											|
+	Which results in a session looking like that					|
+											|
+	+----------------+								|
+	|      tail      |								|
+	|----------------|								|
+	|          | top |								|
+	|----------|     |								|
+	| weechat  |     |								|
+	+----------------+								|
+											|
++---------------------------------------------------------------------------------------+
+
+rifle # Se PDF'er mm. 
