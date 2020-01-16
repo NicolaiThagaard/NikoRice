@@ -9,10 +9,12 @@
 
 INSTALL:
 
+Move folder "NikoRice/NikoRice --> /home/<user>/"
+
 Run "AutoRice.sh"-script from your home folder:
 
 ----------------------------------
-x@Ubuntu:~$ ./NikoRice/AutoRice.sh
+x@Ubuntu:~$ ~/NikoRice/AutoRice.sh
 ----------------------------------
  
 A reboot is needed when the script has finished. 
