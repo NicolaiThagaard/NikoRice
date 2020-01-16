@@ -1,21 +1,18 @@
+#Ubuntu Server 18.04 ONLY!		              
 
+##Important note: 
 
- +=======================================================+
- |              Ubuntu Server 18.04 ONLY!		 |
- +=======================================================+
+This script assumes you have a fresh install of Ubuntu Server 18.04.
 
-
-====================================================================
-
-INSTALL:
+####INSTALL:
 
 Move folder "NikoRice/NikoRice --> /home/<user>/"
 
 Run "AutoRice.sh"-script from your home folder:
 
-----------------------------------
+```
 x@Ubuntu:~$ ~/NikoRice/AutoRice.sh
-----------------------------------
+```
  
 A reboot is needed when the script has finished. 
 The script will ask you in the prompt.
@@ -25,15 +22,13 @@ In case of failures, check the log file.
 The script will tell you in the prompt.
 The log file can be found here:
 
------------------------------------------------
+```
 x@Ubuntu:~$ cat ~/NikoRice/AutoRice_Install.log
------------------------------------------------
+```
 
 No log file? No errors!
 
 DONE! 
-
-====================================================================
 
 If LightDM does not work (you see the regular Ubuntu login screen):
 
@@ -43,7 +38,6 @@ If "i3" cannot be selected then select "i3 debug", go back,
 and now select "i3" again.
 You can now log in.
 
-====================================================================
 
 EKSTRA NOTES:
 
@@ -54,4 +48,3 @@ See "/VPN" for VPN connectivity, incl. user and passwd.
 
 The rest of the "RiceFiles" folder is used for configuration.
 
-====================================================================
