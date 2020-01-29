@@ -8,6 +8,10 @@ Testet on Ubuntu Server 18.04, but might work on other distros too, however, I h
 
 This script assumes you have a fresh install of Ubuntu Server 18.04 and nothing else!
 
+#### Download:
+
+wget https://github.com/NicolaiThagaard/NikoRice/tree/master/NikoRice
+
 #### INSTALL:
 
 Move folder "NikoRice/NikoRice --> /home/your_user_name/"
