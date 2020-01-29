@@ -10,7 +10,12 @@ This script assumes you have a fresh install of Ubuntu Server 18.04 and nothing 
 
 #### Download:
 
-comming soon
+```
+https://github.com/NicolaiThagaard/NikoRice.git 
+```
+```
+cp -r NikoRice/NikoRice ~
+```
 
 #### INSTALL:
 
