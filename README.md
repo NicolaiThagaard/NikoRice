@@ -10,7 +10,7 @@ This script assumes you have a fresh install of Ubuntu Server 18.04 and nothing 
 
 #### Download:
 
-wget https://github.com/NicolaiThagaard/NikoRice/tree/master/NikoRice
+comming soon
 
 #### INSTALL:
 
