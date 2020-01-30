@@ -20,10 +20,11 @@ fi
 
 echo -e "${GREEN}Running script.. (Please be patient, this might take a while)"
 echo -e "${WHITE}"
+
+#Internet connectivity test
 test1=8.8.8.8
 test2=www.google.com
 
-#Internet test
 if nc -dzw1 $test1 443 && echo |openssl s_client -connect $test1:443 2>&1 |awk '
   handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
   $1 $2 == "SSLhandshake" { handshake = 1 }'
