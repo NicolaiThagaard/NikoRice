@@ -71,7 +71,7 @@ wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/insta
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}[  OK  ]${WHITE} wget Oh-My-ZSH and install"
 else
-    echo -e "${RED}[FAILED]${WHITE} wget Oh-My-ZSH and install" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} wget Oh-My-ZSH and install (already installed?)" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 cd; cd NikoRice/RiceFiles > /dev/null 2>&1
@@ -194,3 +194,7 @@ else
   echo -e ""
   sleep 1
 fi
+
+echo -e ""
+echo -e "Run this script again at reboot to check everything is OK"
+echo -e ""
