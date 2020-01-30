@@ -181,20 +181,22 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e ""
         echo "Your computer will reboot in 5 seconds"
         echo -e ""
+        echo -e "Run this script again at reboot to check everything is OK"
+        echo -e ""
         sleep 5
         reboot
 elif [[ $REPLY =~ ^[Nn]$ ]]; then
         echo -e ""
         echo "Please reboot your system later!"
         echo -e ""
+        echo -e "Run this script again at reboot to check everything is OK"
+        echo -e ""
         sleep 1
 else
   echo -e ""
 	echo "Please reboot your system later!"
   echo -e ""
+  echo -e "Run this script again at reboot to check everything is OK"
+  echo -e ""
   sleep 1
 fi
-
-echo -e ""
-echo -e "Run this script again at reboot to check everything is OK"
-echo -e ""
