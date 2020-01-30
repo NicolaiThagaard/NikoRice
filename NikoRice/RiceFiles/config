@@ -16,11 +16,6 @@ set $mod Mod4
 #font pango:monospace 8
 font pango:Hack 8
 
-exec --no-startup-id bash  xautolock -time 5 -locker "bash /home/a/.config/scripts/i3lock.sh & sleep 1; systemctl suspend && sleep 5; bash /home/a/.config/scripts/i8kctl.sh" & 
-exec --no-startup-id bash /home/a/.config/scripts/i8kctl.sh
-exec --no-startup-id bash sudo /home/a/dell-bios-fan-control/dell-bios-fan-control enable
-exec --no-startup-id bash /home/a/.config/scripts/SkolePC
-#exec --no-startup-id bash /home/a/.config/scripts/NoSuspend.sh
 exec --no-startup-id compton
 exec --no-startup-id bash /home/a/.config/scripts/loginscript.sh
 exec --no-startup-id setxkbmap dk
