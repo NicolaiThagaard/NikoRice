@@ -1,19 +1,34 @@
-xrandr --output eDP-1 --off --output HDMI-1 --auto					#Skift til skærm nr. 2 med HDMI
-xrandr --output HDMI-1 --off --output eDP-1 --auto					#omvendt --^ 
-xrandr --output <skærmnavn eks HDMI-2> --auto						#Tænd skærm med xrandr
-arandr											#Kan gøre ovenstående visuelt
+----------------------------------------------------------------------------------------
+SSH ingen password login:
 
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target	#PC suspender ikke når den lukkes sammen. unmask for at undo
+ssh-keygen -t rsa -b 4096 -C "nicolaithagaard@gmail.com"									#Skal genereres én gang fra den pc du bruger.
 
-nmtui connect										#connect til WIFI
+sh-copy-id -i ~/.ssh/id_rsa.pub Brugernavn@IP-addresse										#Tilføj brugernavn og ip-adresse til servere/klienter, som du ikke vil bruge kode til
 
-rar a <outputfil>.rar <inputfilsti>							#Lav rar-arkiv med en bestem fil eller mappe. Brug da stien
-unrar l <fil>.rar									#Viser indholdet af arkivet 
-unrar t <fil>.rar									#Test arkivet
+----------------------------------------------------------------------------------------
 
-dd if=/dev/zero of=/dev/<USBDevice>							#Skriv disk med nuller (VÆR FORSIGTIG, vælg den rigtige disk!) 
-sudo mkfs.ntfs -Q /dev/sdb1								#Skriver ntfs på partitionen af USB'en med -Q for hurtig. Tab ved mkfs for at se andre filsystemtyper 
-sudo dd if=/home/a/<EKSLinux.iso> of=/dev/<Device> bs=4M status=progress		#Skriver en iso til eksempelvis USB. Vær OBS på at alt slettes på USB'et
+thunar #drag and drop file browser
+
+Ctrl+Shift+R #Søg efter tidligere kommandoer i terminalen
+
+cd /lib/modules/<NYESTE>-genert/misc && sudo kmodsign sha256 ~/MOK.priv ~/MOK.der <kernemodul(.ko fil)>				#Tillade kernemodul 
+
+xrandr --output eDP-1 --off --output HDMI-1 --auto										#Skift til skærm nr. 2 med HDMI
+xrandr --output HDMI-1 --off --output eDP-1 --auto										#omvendt --^ 
+xrandr --output <skærmnavn eks HDMI-2> --auto											#Tænd skærm med xrandr
+arandr																#Kan gøre ovenstående visuelt
+
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target						#PC suspender ikke når den lukkes sammen. unmask for at undo
+
+nmtui connect															#connect til WIFI
+
+rar a <outputfil>.rar <inputfilsti>												#Lav rar-arkiv med en bestem fil eller mappe. Brug da stien
+unrar l <fil>.rar														#Viser indholdet af arkivet 
+unrar t <fil>.rar														#Test arkivet
+
+sudo dd if=/home/a/isos/ubuntu-18.04.2-live-server-amd64.iso of=/dev/sdb oflag=sync bs=4M status=progress			#Skriver en iso til eksempelvis USB. Vær OBS på at alt slettes på USB'et
+dd if=/dev/zero of=/dev/<USBDevice>												#Skriv disk med nuller (VÆR FORSIGTIG, vælg den rigtige disk!) 
+sudo mkfs.ntfs -Q /dev/sdb1													#Skriver ntfs på partitionen af USB'en med -Q for hurtig. Tab ved mkfs for at se andre filsystemtyper 
 
 sensors											#Temperaturer
 
@@ -161,6 +176,8 @@ Højre control (den blå) + Fn + Venstre pil-task (Den blå Home)
 
 kør program i nyt tmux-vindue, se .config/scripts/VPNScript.sh.bak og VPNofQbit.sh
 
+sudo ./dell-bios-fan-control <disable|enable>				#Disable for at slå BIOS-fan control fra. For at det virker, skal Secure Boot slås fra. Dette gøres ved at 1) Genstarte 2) ved reboot spam F12 3) Vælg "change boot mode settings" 4) slå fra/til. OBS! Gælder kun for Dell Latitude E5570 bærbar
+
 i8kctl fan - 1								#styre computerens blæser 1 = 2500 RPM, 2 = 4500 RPM
 
 $sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
@@ -261,3 +278,24 @@ $sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
 +---------------------------------------------------------------------------------------+
 
 rifle # Se PDF'er mm. 
+
+---------------------------------------------
+
+Minicom console guide:
+
+Tilføj bruger til dialout:
+
+sudo usermod -a -G dialout <brugernavn>
+
+Connect via usb console kabel:
+
+sudo minicom -D /dev/ttyUSB0
+
+configure:
+
+sudo minicom -s
+
+----------------------------------------------
+
+mv Font.ttf .local/share/fonts #Installer en downloaded font (e.g. dafont.com --> Hackfont.ttf)																
+sudo nano /etc/netplan/xxxxxx.yaml #Server interface DHCP
