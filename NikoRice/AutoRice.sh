@@ -46,7 +46,7 @@ fi
 # Update
 sudo apt-get update > /dev/null 2>&1; sudo apt-get dist-upgrade -y > /dev/null 2>&1; sudo apt-get autoremove -y > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e " ${GREEN}[  OK  ]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
+    echo -e "${GREEN}[  OK  ]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
 else
     echo -e "${RED}[FAILED]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
 fi
