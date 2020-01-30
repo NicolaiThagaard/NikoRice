@@ -1,0 +1,2 @@
+#!/bin/bash
+vboxmanage startvm "SKOLE-PC-Windows 10" &>/dev/null &
