@@ -24,7 +24,7 @@ Move folder "NikoRice/NikoRice --> /home/your_user_name/"
 Run "AutoRice.sh"-script from your home folder:
 
 ```
-x@Ubuntu:~$ bash ./NikoRice/AutoRice.sh
+bash ./NikoRice/AutoRice.sh
 ```
  
 A reboot is needed when the script has finished. 
