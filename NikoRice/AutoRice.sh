@@ -18,22 +18,46 @@ if [ "$(whoami)" != "root" ]; then
   exec sudo -- "$0" "$@"
 fi
 
-echo -e "${GREEN}Running script.."
+echo -e "${GREEN}Running script.. (Please be patient, this might take a while)"
 echo -e "${WHITE}"
+test1=8.8.8.8
+test2=www.google.com
 
-sudo apt update > /dev/null 2>&1; sudo apt dist-upgrade -y > /dev/null 2>&1; sudo apt autoremove -y > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo -e "sudo apt update; dist-upgrade; apt-autoremove ${GREEN}[OK]${WHITE}"
+#Internet test
+if nc -dzw1 $test1 443 && echo |openssl s_client -connect $test1:443 2>&1 |awk '
+  handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
+  $1 $2 == "SSLhandshake" { handshake = 1 }'
+then
+  echo "Connection test: 8.8.8.8        up. Proceeding.."
 else
-    echo -e "sudo apt update; dist-upgrade; apt-autoremove ${RED}[FAILED]${WHITE}"
+  echo "Connection test: 8.8.8.8        down. Exiting.."
+  exit 1
+fi
+if nc -dzw1 $test2 443 && echo |openssl s_client -connect $test2:443 2>&1 |awk '
+  handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
+  $1 $2 == "SSLhandshake" { handshake = 1 }'
+then
+  echo "Connection test: www.google.com up. Proceeding.."
+else
+  echo "Connection test: www.google.com down. Exiting.."
+  exit 1
 fi
 
+# Update
+sudo apt-get update > /dev/null 2>&1; sudo apt-get dist-upgrade -y > /dev/null 2>&1; sudo apt-get autoremove -y > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo -e " ${GREEN}[  OK  ]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
+else
+    echo -e "${RED}[FAILED]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
+fi
+
+#Install packages
 for pkg in $PKGS1 $PKGS2 $PKGS3 $PKGS4 $PKGS5 $PKGS6 ; do
   if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
-      echo -e "Package skipped:   '$pkg' ${GREEN}[OK]${WHITE} (already installed)"
+      echo -e "${GREEN}[  OK  ]${WHITE} Package skipped:   '$pkg' (already installed)"
         else
           if sudo apt-get -qq install $pkg > /dev/null 2>&1; then
-            echo -e "Package installed: '$pkg' ${GREEN}[OK]${WHITE}"
+            echo -e "${GREEN}[  OK  ]${WHITE} Package installed: '$pkg'"
           else
             echo -e ""
             echo -e "Could not locate '$pkg', please install manually (see ${HOME}/NikoRice/AutoRice_Install.log)" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
@@ -44,78 +68,78 @@ done
 
 wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh > /dev/null 2>&1; sh install.sh --unattended > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "wget Oh-My-ZSH and install ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} wget Oh-My-ZSH and install"
 else
-    echo -e "wget Oh-My-ZSH and install ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} wget Oh-My-ZSH and install" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 cd; cd NikoRice/RiceFiles > /dev/null 2>&1
 
 cp -r baggrunde kommandoer.txt VPN .Xressources ${HOME}/
 if [ $? -eq 0 ]; then
-    echo -e "cp -r baggrunde kommandoer VPN .Xressources ${HOME}/${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} cp -r baggrunde kommandoer VPN .Xressources ${HOME}/"
 else
-    echo -e "cp -r baggrunde kommandoer VPN .Xressources ${HOME}/${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} cp -r baggrunde kommandoer VPN .Xressources ${HOME}/" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 if [ ! -d ${HOME}/.config/i3/ ]; then
     mkdir -p ${HOME}/.config/i3/;
-    echo -e "Created needed dir '${HOME}/.config/i3/' ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} Created needed dir '${HOME}/.config/i3/'"
 else
-    echo -e "dir '${HOME}/.config/i3/' already exists. Skipping. ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} dir '${HOME}/.config/i3/' already exists. Skipping."
 fi
 
 cp -r config ${HOME}/.config/i3/ > /dev/null 2>&1; cp -r .config/scripts ${HOME}/.config/ > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "cp -r config ${HOME}/.config/i3/; cp -r .config/scripts ${HOME}/.config/ ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} cp -r config ${HOME}/.config/i3/; cp -r .config/scripts ${HOME}/.config/"
 else
-    echo -e "cp -r config ${HOME}/.config/i3/; cp -r .config/scripts ${HOME}/.config/ ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} cp -r config ${HOME}/.config/i3/; cp -r .config/scripts ${HOME}/.config/" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 sudo cp -r lightdm-gtk-greeter.conf /etc/lightdm/lightdm-gtk-greeter.conf > /dev/null 2>&1; sudo cp -r files-dell-bios-fan-control ${HOME}/ > /dev/null 2>&1; sudo cp -r i3status.conf /etc/ > /dev/null 2>&1; sudo cp -r i3lock /usr/local/bin/ > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "sudo cp lightdm-gtk-greeter.conf, files-dell-bios-fan-control, i3status.conf, i3lock ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} sudo cp lightdm-gtk-greeter.conf, files-dell-bios-fan-control, i3status.conf, i3lock"
 else
-    echo -e "sudo cp lightdm-gtk-greeter.conf files-dell-bios-fan-control, i3status.conf, i3lock ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} sudo cp lightdm-gtk-greeter.conf files-dell-bios-fan-control, i3status.conf, i3lock" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 cd
 
 pip3 install pywal > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "pip3 install pywal ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} pip3 install pywal"
 else
-    echo -e "pip3 install pywal ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} pip3 install pywal" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 if [ ! -d ${HOME}/.zshrc ]; then
     sudo rm ${HOME}/.zshrc
-    echo -e "Removed old dir '${HOME}/.zshrc' ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} Removed old dir '${HOME}/.zshrc'"
 else
-    echo -e "Could not remove old dir '${HOME}/.zshrc' ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} Could not remove old dir '${HOME}/.zshrc'" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 cd
 cd NikoRice/RiceFiles > /dev/null 2>&1
 cp -r .zshrc ${HOME}/
 if [ $? -eq 0 ]; then
-    echo -e "Move file '.zshrc --> ${HOME}/' ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} Move file '.zshrc --> ${HOME}/'"
 else
-    echo -e "Move file '.zshrc --> ${HOME}/' ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} Move file '.zshrc --> ${HOME}/'" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 cd
 
 xrdb ${HOME}/.Xressources > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "execute command 'xrdb ${HOME}/.Xressources' ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} execute command 'xrdb ${HOME}/.Xressources'"
 else
-    echo -e "execute command 'xrdb ${HOME}/.Xressources' ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} execute command 'xrdb ${HOME}/.Xressources'" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 wal -i ${HOME}/baggrunde/macro.png -a 80 > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo -e "execute command 'wal -i ${HOME}/baggrunde/macro.png -a 80' ${GREEN}[OK]${WHITE}"
+    echo -e "${GREEN}[  OK  ]${WHITE} execute command 'wal -i ${HOME}/baggrunde/macro.png -a 80'"
 else
-    echo -e "execute command 'wal -i ${HOME}/baggrunde/macro.png -a 80' ${RED}[FAILED]${WHITE}" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
+    echo -e "${RED}[FAILED]${WHITE} execute command 'wal -i ${HOME}/baggrunde/macro.png -a 80'" | tee -a "${HOME}/NikoRice/AutoRice_Install.log"
 fi
 
 echo -e ""
