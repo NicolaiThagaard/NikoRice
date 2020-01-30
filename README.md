@@ -57,6 +57,6 @@ You can now log in.
 See "~/.config/scripts" for a variety of scripts.
 See "~/baggrunde" for a variety of background images.
 See "commands.txt" for a long list of useful commands.
-See "/VPN" for VPN connectivity, incl. user and passwd.
+See "VPN" for VPN connectivity, incl. user and passwd.
 
 The rest of the "RiceFiles" folder is used for configuration.
