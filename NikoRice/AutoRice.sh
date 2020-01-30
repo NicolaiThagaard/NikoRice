@@ -28,18 +28,18 @@ if nc -dzw1 $test1 443 && echo |openssl s_client -connect $test1:443 2>&1 |awk '
   handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
   $1 $2 == "SSLhandshake" { handshake = 1 }'
 then
-  echo "Connection test: 8.8.8.8        up. Proceeding.."
+  echo "${GREEN}[  OK  ]${WHITE} Connection test: 8.8.8.8        up. Proceeding.."
 else
-  echo "Connection test: 8.8.8.8        down. Exiting.."
+  echo "${RED}[FAILED]${WHITE} Connection test: 8.8.8.8        down. Exiting.."
   exit 1
 fi
 if nc -dzw1 $test2 443 && echo |openssl s_client -connect $test2:443 2>&1 |awk '
   handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
   $1 $2 == "SSLhandshake" { handshake = 1 }'
 then
-  echo "Connection test: www.google.com up. Proceeding.."
+  echo "${GREEN}[  OK  ]${WHITE} Connection test: www.google.com up. Proceeding.."
 else
-  echo "Connection test: www.google.com down. Exiting.."
+  echo "${RED}[FAILED]${WHITE} Connection test: www.google.com down. Exiting.."
   exit 1
 fi
 
