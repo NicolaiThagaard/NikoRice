@@ -89,7 +89,7 @@ else
     echo -e "${GREEN}[  OK  ]${WHITE} dir '${HOME}/.config/i3/' already exists. Skipping."
 fi
 
-cp -r config ${HOME}/.config/i3/ > /dev/null 2>&1; cp -r .config/scripts ${HOME}/.config/ > /dev/null 2>&1
+cp -r config ${HOME}/.config/i3/ > /dev/null 2>&1; cp -r scripts ${HOME}/.config/ > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}[  OK  ]${WHITE} cp -r config ${HOME}/.config/i3/; cp -r .config/scripts ${HOME}/.config/"
 else
