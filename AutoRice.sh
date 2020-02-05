@@ -32,16 +32,16 @@ then
   echo -e "[  OK  ] Connection test: 8.8.8.8        up. Proceeding.."
 else
   echo -e "[FAILED] Connection test: 8.8.8.8        down. Exiting.."
-  exit 1
+  exit 
 fi
 if nc -dzw1 $test2 443 && echo |openssl s_client -connect $test2:443 2>&1 |awk '
   handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
   $1 $2 == "SSLhandshake" { handshake = 1 }'
 then
-  echo -e "${GREEN}[  OK  ]${WHITE} Connection test: www.google.com up. Proceeding.."
+  echo -e "[  OK  ] Connection test: www.google.com up. Proceeding.."
 else
-  echo -e "${RED}[FAILED]${WHITE} Connection test: www.google.com down. Exiting.."
-  exit 1
+  echo -e "[FAILED] Connection test: www.google.com down. Exiting.."
+  exit 
 fi
 
 echo -e "Webtest complete. Proceeding.."
