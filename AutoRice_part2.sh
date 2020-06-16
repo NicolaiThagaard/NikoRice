@@ -83,6 +83,11 @@ else
     echo -e "${RED}[FAILED]${WHITE} execute command 'wal -i ~/baggrunde/macro.png -a 80'" | tee -a "~/NikoRice/AutoRice_Install.log"
 fi
 
+echo -e ""
+echo -e "Please reboot system before running part 3!"
+echo -e "Remember to select i3 from the menu before logging in!"
+echo -e ""
+
 read -p "Reboot system before running 'AutoRice_part3.sh'. Will you do it now? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
