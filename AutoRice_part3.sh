@@ -22,12 +22,6 @@ if [ $? -eq 0 ]; then
 else
     echo -e "${RED}[FAILED]${WHITE} sudo cp -r i3status.conf /etc/" | tee -a "~/NikoRice/AutoRice_Install.log"
 fi
-sudo cp -r i3lock /usr/local/bin/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} sudo cp -r i3lock /usr/local/bin/"
-else
-    echo -e "${RED}[FAILED]${WHITE} sudo cp -r i3lock /usr/local/bin/" | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
 
 echo -e ""
 read -p "Set ZSH as standard shell? (yes) (y/n)" -n 1 -r
