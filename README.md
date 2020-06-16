@@ -27,7 +27,7 @@ bash ./NikoRice/AutoRice_part2.sh
 ```
 Run part 3 after a reboot. (The script will tell you).
 ```
-bash ./NikoRice/AutoRice_part1.sh
+bash ./NikoRice/AutoRice_part3.sh
 ```
  
 A reboot is needed when the script has finished. 
