@@ -1,4 +1,0 @@
-#!/bin/bash
-tmux new -d bash
-tmux send-keys "printf 'Koden i base64' | base64 -d | sudo -S /home/a/VPNscript2.sh
-" 
