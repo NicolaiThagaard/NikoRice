@@ -52,10 +52,10 @@ rm $(find /home/ -path ~/NikoRice -prune -o -name ".zshrc" | grep ".zshrc")
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}[  OK  ]${WHITE} Removed old dir '~/.zshrc'"
 else
-    echo -e "${RED}[FAILED]${WHITE} Could not remove old dir '~/.zshrc'" | tee -a "~/NikoRice/AutoRice_Install.log"
+    echo -e "${GREEN}[FAILED]${WHITE} Old dir '~/.zshrc' not found. All good." | tee -a "~/NikoRice/AutoRice_Install.log"
 fi
 
-cd "$(find ~/NikoRice/RiceFiles/ -name ".zshrc" -printf '%h' -quit)"
+cd "$(find ~/NikoRice/RiceFiles/ -name "lightdm-gtk-greeter.conf" -printf '%h' -quit)"
 
 cp -r .zshrc ~/
 if [ $? -eq 0 ]; then
