@@ -13,10 +13,6 @@ This script assumes you have a fresh install of Ubuntu Server 18.04 or 20.04 and
 ```
 git clone https://github.com/NicolaiThagaard/NikoRice.git 
 ```
-```
-cp -r NikoRice/NikoRice ~
-```
-
 #### INSTALL:
 
 Move folder "NikoRice/NikoRice --> /home/your_user_name/"
