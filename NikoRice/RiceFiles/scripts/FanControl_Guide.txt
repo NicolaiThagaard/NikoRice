@@ -1,9 +1,0 @@
-(1) git clone https://github.com/TomFreudenberg/dell-bios-fan-control
-(2) cd ~/dell-bios-fan-control
-(3) make
-(4) cd ~
-(5) ./dell-bios-fan-control 0 (turn off dell bios fan control, 1 to turn on again)
-(6) sudo apt install i8kutils
-(7) i8kctl fan - 1 (1 ≃ 2500 RPM, 2≃ 4500 RPM)
-(8) 
-
