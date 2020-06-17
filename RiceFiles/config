@@ -17,9 +17,9 @@ set $mod Mod4
 font pango:Hack 8
 
 exec --no-startup-id compton
-exec --no-startup-id bash /home/a/.config/scripts/loginscript.sh
+exec --no-startup-id bash ${HOME}/.config/scripts/loginscript.sh
 exec --no-startup-id setxkbmap dk
-exec --no-startup-id bash /home/a/.config/scripts/wal-set.sh
+exec --no-startup-id bash ${HOME}/.config/scripts/wal-set.sh
 #exec --no-startup-id nm-applet
 
 bindsym XF86MonBrightnessUp exec xbacklight -inc 5 # increase screen brightness
@@ -89,14 +89,14 @@ bar {
         urgent_workspace   #2f343a #900000 #ffffff
     }
         status_command i3status -c /etc/i3status.conf
-        #status_command /home/a/.config/scripts/i3status-fftimer.sh
+        #status_command ${HOME}/.config/scripts/i3status-fftimer.sh
 }
 # PROTIP: You can also dynamically set dmenu's colors this way:
 #bindsym $mod+d exec dmenu_run -nb "$fg" -nf "$bg" -sb "$bg" -sf "$fg"
 bindsym $mod+p exec rofi -show "Select output mode" -modi "Select output mode":/home/a/.config/scripts/simple_rofi_menu.py
 bindsym $mod+d exec rofi -show run
-bindsym $mod+l exec bash /home/a/.config/scripts/i3lock.sh
-bindsym $mod+Shift+l exec bash /home/a/.config/scripts/i3lockSuspend.sh
+bindsym $mod+l exec bash ${HOME}/.config/scripts/i3lock.sh
+bindsym $mod+Shift+l exec bash ${HOME}/.config/scripts/i3lockSuspend.sh
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
