@@ -1,4 +1,16 @@
 ----------------------------------------------------------------------------------------
+
+Fix Screentearing:
+sudo apt install nvidia-settings nvidia-driver-<highest driver number>
+open nvidia-settings with sudo: 
+sudo nvidia-settings
+Go to "X server Display Configuration"
+Click on "Advanced..."
+Tick on "Force Composition Pipeline" and "Force Full Composition Pipeline"
+Click "Apply"
+Click on "Save to X Configuration File"
+
+----------------------------------------------------------------------------------------
 SSH ingen password login:
 
 ssh-keygen -t rsa -b 4096 -C "your_email@gmail.com"									#Skal genereres én gang fra den pc du bruger.
@@ -9,43 +21,66 @@ sh-copy-id -i ~/.ssh/id_rsa.pub Brugernavn@IP-addresse										#Tilføj brugern
 
 thunar #drag and drop file browser
 
+----------------------------------------------------------------------------------------
+
 Ctrl+Shift+R #Søg efter tidligere kommandoer i terminalen
 
+----------------------------------------------------------------------------------------
+
 cd /lib/modules/<NYESTE>-genert/misc && sudo kmodsign sha256 ~/MOK.priv ~/MOK.der <kernemodul(.ko fil)>				#Tillade kernemodul 
+
+----------------------------------------------------------------------------------------
 
 xrandr --output eDP-1 --off --output HDMI-1 --auto										#Skift til skærm nr. 2 med HDMI
 xrandr --output HDMI-1 --off --output eDP-1 --auto										#omvendt --^ 
 xrandr --output <skærmnavn eks HDMI-2> --auto											#Tænd skærm med xrandr
 arandr																#Kan gøre ovenstående visuelt
 
+----------------------------------------------------------------------------------------
+
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target						#PC suspender ikke når den lukkes sammen. unmask for at undo
 
+----------------------------------------------------------------------------------------
+
 nmtui connect															#connect til WIFI
+
+----------------------------------------------------------------------------------------
 
 rar a <outputfil>.rar <inputfilsti>												#Lav rar-arkiv med en bestem fil eller mappe. Brug da stien
 unrar l <fil>.rar														#Viser indholdet af arkivet 
 unrar t <fil>.rar														#Test arkivet
 
+----------------------------------------------------------------------------------------
+
 sudo dd if=/home/a/isos/ubuntu-18.04.2-live-server-amd64.iso of=/dev/sdb oflag=sync bs=4M status=progress			#Skriver en iso til eksempelvis USB. Vær OBS på at alt slettes på USB'et
 dd if=/dev/zero of=/dev/<USBDevice>												#Skriv disk med nuller (VÆR FORSIGTIG, vælg den rigtige disk!) 
 sudo mkfs.ntfs -Q /dev/sdb1													#Skriver ntfs på partitionen af USB'en med -Q for hurtig. Tab ved mkfs for at se andre filsystemtyper 
 
-sensors											#Temperaturer
+----------------------------------------------------------------------------------------
+
+sudo apt install sensors-applet
+sensors					#Temperaturer
+
+----------------------------------------------------------------------------------------
 
 sudo openvpn /home/a/VPN/Netherlands.ovpn						#Connect til VPN
 sudo nano /etc/netplan/01-netcfg.yaml							#Hvis VPN ikke virker, så ret DNS'en
 sudo nano /etc/resolv.conf								# --//--
 
-SEEDBOKS:
-Installation Guide: 
-https://freedif.org/flood-modern-web-ui-for-rtorrent
+----------------------------------------------------------------------------------------
 
-ssh a@{IP_PÅ_Seed} -X									#SSH ind i maskinen med x-forwarding
+ssh a@{IP_PÅ_Seed} -XC									#SSH ind i maskinen med x-forwarding og compression
+
+----------------------------------------------------------------------------------------
+
 chromium-browser &>/dev/null &								#Starter Chrome så command-line stadig kan bruges
-http://localhost:3000									#I Chrome for at bruge seed-boksen. Brugernavn: a Kode: R.............
+
+----------------------------------------------------------------------------------------
 
 OVERFØRSEL:
 scp /path/to/file username@a:/path/to/destination					#Kopier fra Linux til anden Linux
+
+----------------------------------------------------------------------------------------
 
 OVERFØRE FLERE FILER:
 mc											#SFTP-overførsel
@@ -55,8 +90,12 @@ F5											#for at kopiere filere over,
 F6											#for at flytte dem
 Promten											# i promten skriver du eks. bruger1@192.168.12.3 efterfulgt af kode
 
+----------------------------------------------------------------------------------------
+
 youtube-dl -q -o- "https://www.youtube.com/watch?v=YduZqu3QpSw" | mplayer -vo aa -	#Afspil >YT-video i ASCII
 youtube-dl --extract-audio --audio-format mp3 -o "%(title)s.%(ext)s" "youtube link her"	#Download youtubevideor, skriv -i, hvis den melder fejl. Husk at fjerne de "/" som ikke skal være i linket (copy paste error)
+
+----------------------------------------------------------------------------------------
 
 TMUX:
 
@@ -67,14 +106,23 @@ ctrl+b d										#Detach'er tmux (programmer vil stadig være åbne)
 ctrl+b o										#Skifter mellem prompts'ne
 exit											#Lukker prompt'en (skrives i prompt'en)
 
+----------------------------------------------------------------------------------------
+
 browsh											#Skal åbnes med lxterminal
+
+----------------------------------------------------------------------------------------
 
 scrot											#Screenshot
 
+----------------------------------------------------------------------------------------
+
 du -sh /<directory>									#Size of a directory
+
+----------------------------------------------------------------------------------------
 
 @reboot root tmux new -d "openvpn /home/a/VPN/Netherlands.ovpn"				#I /etc/crontab kan man vælge hvornår bestemte kommmandoer/programmer skal køre. I dette eksempel køres vpn i tmux når PC'en startes
 
+----------------------------------------------------------------------------------------
 
 SSH I VIRTUEL MASKINE (Som kører Linux):
 
@@ -99,18 +147,26 @@ ssh <brugernavn>@<IP-adresse> -X
 X-delen gør at X bliver forwarded 
 aka programmer kan åbnes remotely.
 
+----------------------------------------------------------------------------------------
+
 Synology DiskStation:
 http://QuickConnect.to/SkoleBox
+
+----------------------------------------------------------------------------------------
 
 sudo rsync --ignore-existing --exclude 'a/.cache*' -av -e ssh /home/ a@10.13.37.13::LinuxBackup27-09-2018/				#backup af alt til NAS-share. --ignore-existing gør at den ignorerer det som allerede findes af det samme. ---exclude ekskluderer noget, i denne, noget ligegyldigt cache 
 https://www.thegeekstuff.com/2011/01/rsync-exclude-files-and-folders/?utm_source=feedburner						#Link til smarte rsync funktioner
 
+----------------------------------------------------------------------------------------
+
 watch -n <sekunder_mellem_loop> <kommando_til_loop>					#Loop en bestemt kommando	
 
+----------------------------------------------------------------------------------------
+
+sudo npm install taskbook
 tb --<kommando> <note>									#Simpelt noteprogram
 
-
-
+----------------------------------------------------------------------------------------
 
 MOUNTING NAS
 
@@ -135,34 +191,60 @@ nfs : Tells the type of share you are trying to mount.
 <NameofShare> : The Share within the Volume of the hard drive that you want to mount.
 /mnt/<FolderyouCreated> : The location to which you want your share to be mounted. Remember that it is the folder that you already created.
 
+----------------------------------------------------------------------------------------
+
 for i in {1..999}; do echo -n  "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" | lolcat; done
 
 for i in {1..9999}; do echo -n  "Det her er en test for at teste min test. Dette er en test. Test. Test. Tes" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Tes Test. Test. Test en er Dette. test min teste at for test en er her Det" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Det her er en test for at teste min test. Dette er en test. Test. Test. Tes" | lolcat -a; sleep 1.5; done & for i in {1..9999}; do echo -n  "Tes Test. Test. Test en er Dette. test min teste at for test en er her Det" | lolcat -a; sleep 1.5; done
 
+----------------------------------------------------------------------------------------
+
 speedometer -tw <interface e.g. wlp1s0>
+
+----------------------------------------------------------------------------------------
 
 vis											#Sound visualizer 
 
+----------------------------------------------------------------------------------------
+
 VBoxManage modifyhd /home/a/VirtualBox\ VMs/Seed/Seed.vdi --resize 3000000		#Resize VBox-image til bestemt størrelse. I dette tilfælde 300 GB. Brug Gparted i VB'en til at få gavn af pladsen
+
+----------------------------------------------------------------------------------------
 
 pulsemixer #Lyd
 
+----------------------------------------------------------------------------------------
+
 ncdu #Se hvor meget alle directories fylder
+
+----------------------------------------------------------------------------------------
 
 xinput --list										#liste over x-inputs (for at slukke nibble)
 xinput --disable 13									#Slukker ID 13, i dette tilfælde blå-sort-niblle. Skrevet ind i i3-config som startup (hvis ID-et ændres så noget ikke virker)
 
+----------------------------------------------------------------------------------------
+
 .local/bin										#Scrips der flyttes til denne mappe kan eksekveres i dropdown-menues ved at skrive scriptets navn. Eksempelvis scriptet "SkolePC", hvilket også er navnet på scriptet. 																		
+
+----------------------------------------------------------------------------------------
 
 /etc/crontab										#Lave kommandoer (el. scripts) der kører bestemte tidspunkter
 
+----------------------------------------------------------------------------------------
+
 df -h | grep "Filesystem*\|/dev/sda1"
 
+----------------------------------------------------------------------------------------
+
 rsync --verbose --archive --dry-run /oldisk/a/ /newdisk/a/		#Hvis mv bliver afbrudt kan man starte hvor den slap. Fjern --dry-run efter den har kørt første gang. Dry-run bruges til at teste om den kan gøre det, uden at den faktisk gør det. Tager et par sekunder.   
+
+----------------------------------------------------------------------------------------
 
 Højre control for at slippe et VM-vindue 
 
 Højre control (den blå) + Fn + Venstre pil-task (Den blå Home)
+
+----------------------------------------------------------------------------------------
 
 +---------------------------------------------------------------+
 |								|
@@ -174,11 +256,13 @@ Højre control (den blå) + Fn + Venstre pil-task (Den blå Home)
 |								|
 +---------------------------------------------------------------+
 
-kør program i nyt tmux-vindue, se .config/scripts/VPNScript.sh.bak og VPNofQbit.sh
+----------------------------------------------------------------------------------------
 
 sudo ./dell-bios-fan-control <disable|enable>				#Disable for at slå BIOS-fan control fra. For at det virker, skal Secure Boot slås fra. Dette gøres ved at 1) Genstarte 2) ved reboot spam F12 3) Vælg "change boot mode settings" 4) slå fra/til. OBS! Gælder kun for Dell Latitude E5570 bærbar
 
 i8kctl fan - 1								#styre computerens blæser 1 = 2500 RPM, 2 = 4500 RPM
+
+----------------------------------------------------------------------------------------
 
 $sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
 
@@ -199,7 +283,12 @@ $sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
 |											|
 +---------------------------------------------------------------------------------------+
 
-		
+
+
+----------------------------------------------------------------------------------------
+
+
+
 			  TMUX WINDOWS-GUIDE FOR SCRIPTS
 			´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 +---------------------------------------------------------------------------------------+
@@ -277,9 +366,11 @@ $sudo -S xinit firefox $* -- :1						#Kør firefox i baggrunden
 											|
 +---------------------------------------------------------------------------------------+
 
+----------------------------------------------------------------------------------------
+
 rifle # Se PDF'er mm. 
 
----------------------------------------------
+----------------------------------------------------------------------------------------
 
 Minicom console guide:
 
@@ -295,7 +386,12 @@ configure:
 
 sudo minicom -s
 
-----------------------------------------------
+----------------------------------------------------------------------------------------
 
-mv Font.ttf .local/share/fonts #Installer en downloaded font (e.g. dafont.com --> Hackfont.ttf)																
+mv Font.ttf .local/share/fonts #Installer en downloaded font (e.g. dafont.com --> Hackfont.ttf)									
+
+----------------------------------------------------------------------------------------
+
 sudo nano /etc/netplan/xxxxxx.yaml #Server interface DHCP
+
+----------------------------------------------------------------------------------------
