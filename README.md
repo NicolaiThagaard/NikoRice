@@ -1,7 +1,7 @@
 # Ubuntu Server 18.04 and 20.04 ONLY!		              
 
 This is a auto-ricer that changes the look of your Ubuntu Server 18.04 to make a more minimalistic terminal-based desktop enviorment.
-This script uses the i3 Window Manager as a template and zsh combined with Oh-My-Zsh as shell.
+This script uses the i3 Window Manager as a template and ZSH combined with Oh-My-Zsh as shell.
 Testet on Ubuntu Server 18.04 and 20.04, but might work on other distros too, however, I haven't tested this.
 
 ### Important note: 
