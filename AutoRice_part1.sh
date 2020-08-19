@@ -5,12 +5,12 @@ RED='\033[0;31m'
 GREEN='\033[1;32m'
 WHITE='\033[1;37m'
 
-PKGS1="git feh xorg lightdm python3-pip fonts-hack-ttf i3 virtualbox"
-PKGS2="i3lock rar unrar compton zsh chromium-browser rofi neofetch scrot arandr"
+PKGS1="git feh xorg lightdm python3-pip fonts-hack-ttf i3 virtualbox autoreconf make"
+PKGS2="build-essentials i3lock rar unrar compton zsh chromium-browser rofi neofetch scrot"
 PKGS3="imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev"
 PKGS4="libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev"
 PKGS5="libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter"
-PKGS6="lightdm-gtk-greeter-settings libjpeg-turbo8-dev libpam0g-dev"
+PKGS6="arandr ightdm-gtk-greeter-settings libjpeg-turbo8-dev libpam0g-dev"
 
 if [ "$(whoami)" != "root" ]; then
   echo -e "${WHITE}"
