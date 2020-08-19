@@ -1,5 +1,16 @@
 ----------------------------------------------------------------------------------------
 
+Compiling programs:
+sudo apt install autoreconf make build-essentials
+Most programs from Github:
+1: Check which dependencies are needed and install
+2: cd to git cloned directory
+3: autoreconf -i
+4: ./configure
+5: make
+6: sudo make install
+----------------------------------------------------------------------------------------
+
 Fix Screentearing:
 sudo apt install nvidia-settings nvidia-driver-<highest driver number>
 open nvidia-settings with sudo: 
