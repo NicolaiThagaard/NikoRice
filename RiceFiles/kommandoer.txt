@@ -30,6 +30,7 @@ Click "Apply"
 Click on "Save to X Configuration File"
 
 ----------------------------------------------------------------------------------------
+
 SSH ingen password login:
 
 ssh-keygen -t rsa -b 4096 -C "your_email@gmail.com"									
