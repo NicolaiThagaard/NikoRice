@@ -12,6 +12,13 @@ Most programs from Github:
 
 ----------------------------------------------------------------------------------------
 
+xtrlock
+#Simple lock screen. See through.
+pyxtrlock
+#Same as xtrlock, but in python.
+
+----------------------------------------------------------------------------------------
+
 Fix Screentearing:
 sudo apt install nvidia-settings nvidia-driver-<highest driver number>
 open nvidia-settings with sudo: 
