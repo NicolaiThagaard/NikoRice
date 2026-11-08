@@ -1,78 +1,66 @@
-#!/bin/bash
-PATH=$PATH:${HOME}/.local/bin
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 RED='\033[0;31m'
 GREEN='\033[1;32m'
 WHITE='\033[1;37m'
 
-PKGS1="git feh xorg lightdm python3-pip fonts-hack-ttf i3 virtualbox autoreconf make"
-PKGS2="build-essentials i3lock rar unrar compton zsh chromium-browser rofi neofetch scrot"
-PKGS3="imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev"
-PKGS4="libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev"
-PKGS5="libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter"
-PKGS6="arandr ightdm-gtk-greeter-settings libjpeg-turbo8-dev libpam0g-dev"
-
-if [ "$(whoami)" != "root" ]; then
-  echo -e "${WHITE}"
-  echo -e "${GREEN}You need ${RED}root${GREEN} privileges to run this script!"
-  echo -e "${WHITE}"
-  exec sudo bash -- "$0" "$@"
+if [[ $EUID -ne 0 ]]; then
+    if ! command -v sudo >/dev/null 2>&1; then
+        printf 'This installer needs root privileges, but sudo is not installed.\n' >&2
+        exit 1
+    fi
+    exec sudo --preserve-env=PATH bash "$SCRIPT_DIR/$(basename -- "$0")" "$@"
 fi
 
-echo -e "${GREEN}Running script.. (Please be patient, this might take a while)"
-echo -e "${WHITE}"
-
-#Internet connectivity test
-test1=8.8.8.8
-test2=www.google.com
-
-if nc -dzw1 $test1 443 && echo | openssl s_client -connect $test1:443 2>&1 |awk '
-  handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
-  $1 $2 == "SSLhandshake" { handshake = 1 }'
-then
-  echo "Connection test: 8.8.8.8 up. Proceeding.."
-  echo -e "${WHITE}"
-else
-  echo "Connection test: 8.8.8.8 down. Exiting.."
-  exit 1
+if [[ ! -r /etc/os-release ]]; then
+    echo 'Cannot identify this operating system.' >&2
+    exit 1
 fi
-if nc -dzw1 $test2 443 && echo | openssl s_client -connect $test2:443 2>&1 |awk '
-  handshake && $1 == "Verification" { if ($2=="OK") exit; exit 1 }
-  $1 $2 == "SSLhandshake" { handshake = 1 }'
-then
-  echo "Connection test: www.google.com up. Proceeding.."
-  echo -e "${WHITE}"
-else
-  echo "Connection test: www.google.com down. Exiting.."
-  exit 1
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+    printf 'This installer targets Ubuntu; detected %s.\n' "${PRETTY_NAME:-unknown OS}" >&2
+    exit 1
 fi
 
-# Update
-sudo apt-get update; sudo apt-get dist-upgrade -y; sudo apt-get autoremove -y
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
-else
-    echo -e "${RED}[FAILED]${WHITE} sudo apt update; dist-upgrade; apt-autoremove"
-fi
+printf 'Installing NikoRice dependencies on %s...\n' "${PRETTY_NAME:-Ubuntu}"
 
-#Install packages
-for pkg in $PKGS1 $PKGS2 $PKGS3 $PKGS4 $PKGS5 $PKGS6 ; do
-  if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$"; then
-      echo -e "${GREEN}[  OK  ]${WHITE} Package skipped:   '$pkg' (already installed)"
-      sleep 2
-        else
-          if sudo apt-get -qq install $pkg; then
-            echo -e "${GREEN}[  OK  ]${WHITE} Package installed: '$pkg'"
-            sleep 2
-          else
-            echo -e ""
-            echo -e "Could not locate '$pkg', please install manually (see ~/NikoRice/AutoRice_Install.log)" | tee -a "~/NikoRice/AutoRice_Install.log"
-            echo -e ""
-            sleep 5
-          fi
-  fi
+# Refresh package metadata only. Avoid automatically upgrading the whole system.
+apt-get update
+
+# Ubuntu 24.04+ uses externally managed Python environments. Install pywal
+# through pipx in part 2 rather than calling pip against system Python.
+packages=(
+    git feh xorg lightdm python3-pipx fonts-hack i3 virtualbox autoconf make
+    build-essential i3lock rar unrar picom zsh rofi neofetch scrot
+    imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev
+    libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev
+    libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter
+    arandr lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev
+    xbacklight x11-xserver-utils x11-utils curl
+)
+
+failed=()
+for package in "${packages[@]}"; do
+    if ! apt-cache show "$package" >/dev/null 2>&1; then
+        printf '%b[SKIP ]%b Package is not available in the enabled Ubuntu repositories: %s\n' "$RED" "$WHITE" "$package"
+        failed+=("$package (unavailable)")
+    elif dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed'; then
+        printf '%b[  OK  ]%b Already installed: %s\n' "$GREEN" "$WHITE" "$package"
+    elif apt-get install -y --no-install-recommends "$package"; then
+        printf '%b[  OK  ]%b Installed: %s\n' "$GREEN" "$WHITE" "$package"
+    else
+        printf '%b[FAILED]%b Could not install: %s\n' "$RED" "$WHITE" "$package"
+        failed+=("$package")
+    fi
 done
 
-echo -e ""
-echo -e "Run 'AutoRice_part2.sh' to finish install"
-echo -e ""
+if ((${#failed[@]})); then
+    printf '\nSome optional dependencies were skipped or failed:\n'
+    printf '  - %s\n' "${failed[@]}"
+    printf 'Install any needed packages manually, then continue with part 2.\n'
+fi
+
+printf '\nPart 1 is complete. Run AutoRice_part2.sh as your normal user.\n'

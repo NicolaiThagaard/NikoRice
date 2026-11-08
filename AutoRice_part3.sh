@@ -1,74 +1,55 @@
-#!/bin/bash
-PATH=$PATH:${HOME}/.local/bin
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[1;32m'
-WHITE='\033[1;37m'
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+RICE_DIR="$SCRIPT_DIR/RiceFiles"
 
-echo -e ""
-echo -e "Script needs root privileges for this one"
-echo -e ""
-
-cd "$(find ~/NikoRice/RiceFiles/ -name "lightdm-gtk-greeter.conf" -printf '%h' -quit)"
-sudo cp -r lightdm-gtk-greeter.conf /etc/lightdm/lightdm-gtk-greeter.conf
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} sudo cp -r lightdm-gtk-greeter.conf /etc/lightdm/lightdm-gtk-greeter.conf"
-else
-    echo -e "${RED}[FAILED]${WHITE} sudo cp -r lightdm-gtk-greeter.conf /etc/lightdm/lightdm-gtk-greeter.conf" | tee -a "~/NikoRice/AutoRice_Install.log"
+if [[ $EUID -eq 0 ]]; then
+    echo 'Please run this script as your normal user; it will use sudo for system files.' >&2
+    exit 1
 fi
-sudo cp -r i3status.conf /etc/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} sudo cp -r i3status.conf /etc/"
-else
-    echo -e "${RED}[FAILED]${WHITE} sudo cp -r i3status.conf /etc/" | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
-sudo cp -r i3lock /usr/local/bin/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} sudo cp -r i3lock /usr/local/bin/"
-else
-    echo -e "${RED}[FAILED]${WHITE} sudo cp -r i3lock /usr/local/bin/" | tee -a "~/NikoRice/AutoRice_Install.log"
+if [[ ! -d "$RICE_DIR" ]]; then
+    printf 'RiceFiles was not found next to this script: %s\n' "$RICE_DIR" >&2
+    exit 1
 fi
 
-echo -e ""
-read -p "Set ZSH as standard shell? (yes) (y/n)" -n 1 -r
-echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  while true; do
-  echo -e ""
-  echo "Enter password to set ZSH as std. shell"
-  echo -e ""
-  chsh -s $(which zsh) && break
-  echo "Permission denied, try again"
-  done
-elif [[ $REPLY =~ ^[Nn]$ ]]; then
-while true; do
-  trap '' INT TSTP
-  echo "You have no choice. Enter password to set ZSH as std. shell."
-  chsh -s $(which zsh) && break
-  echo "Permission denied, try again"
-done
-else
-  while true; do
-  echo -e "Enter password to set ZSH as std. shell"
-  chsh -s $(which zsh) && break
-  echo "Permission denied, try again"
-  sleep 1
-  done
+log_file="$HOME/NikoRice/AutoRice_Install.log"
+mkdir -p "$(dirname -- "$log_file")"
+log_failure() { printf '%s\n' "$*" | tee -a "$log_file" >&2; }
+
+if [[ -f "$RICE_DIR/i3status.conf" ]]; then
+    sudo install -D -m 0644 "$RICE_DIR/i3status.conf" /etc/i3status.conf || log_failure 'Could not install /etc/i3status.conf.'
+fi
+if [[ -f "$RICE_DIR/i3lock" ]]; then
+    sudo install -D -m 0755 "$RICE_DIR/i3lock" /usr/local/bin/i3lock || log_failure 'Could not install the custom i3lock binary.'
 fi
 
-echo -e ""
-echo -e "Script has finished. System fully set!"
-echo -e ""
+# Expand the home path for LightDM; its greeter does not inherit the user's
+# HOME environment variable from an interactive shell.
+if [[ -f "$RICE_DIR/lightdm-gtk-greeter.conf" ]]; then
+    if [[ -d /etc/lightdm ]]; then
+        temp_config="$(mktemp)"
+        sed "s|\${HOME}|$HOME|g" "$RICE_DIR/lightdm-gtk-greeter.conf" > "$temp_config"
+        sudo install -D -m 0644 "$temp_config" /etc/lightdm/lightdm-gtk-greeter.conf || log_failure 'Could not install the LightDM greeter configuration.'
+        rm -f -- "$temp_config"
+    else
+        log_failure 'LightDM is not installed; skipping its greeter configuration.'
+    fi
+fi
 
-read -p "Please reboot system to make final chances. Will you do it now? (y/n)" -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Your computer will reboot in 5 seconds"
-        sleep 5
-        reboot
-elif [[ $REPLY =~ ^[Nn]$ ]]; then
-        echo "Please reboot your system later!"
-        sleep 1
-else
-  echo "Please reboot your system before you begin work!"
+printf '\nSet Zsh as your default shell? (y/n) '
+read -r answer
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+    zsh_path="$(command -v zsh || true)"
+    if [[ -n "$zsh_path" ]]; then
+        chsh -s "$zsh_path" || log_failure 'Could not change the default shell. You can run chsh -s "$(command -v zsh)" later.'
+    else
+        log_failure 'Zsh is not installed; skipping the shell change.'
+    fi
+fi
+
+printf '\nPart 3 is complete. Reboot to apply the remaining system changes.\n'
+read -r -p 'Reboot now? (y/n) ' answer
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+    sudo systemctl reboot
 fi

@@ -1,102 +1,83 @@
-#!/bin/bash
-PATH=$PATH:${HOME}/.local/bin
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+RICE_DIR="$SCRIPT_DIR/RiceFiles"
 
 RED='\033[0;31m'
 GREEN='\033[1;32m'
 WHITE='\033[1;37m'
 
-if [ "$(whoami)" == "root" ]; then
-  echo -e "${WHITE}"
-  echo -e "${GREEN}Please do not run this script as ${RED}root${GREEN}!"
-  echo -e "${WHITE}"
-  exit
+if [[ $EUID -eq 0 ]]; then
+    printf '%bPlease run this script as your normal user, not root.%b\n' "$RED" "$WHITE" >&2
+    exit 1
+fi
+if [[ ! -d "$RICE_DIR" ]]; then
+    printf 'RiceFiles was not found next to this script: %s\n' "$RICE_DIR" >&2
+    exit 1
 fi
 
-wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh; sh install.sh --unattended 2>&1
+log_file="$HOME/NikoRice/AutoRice_Install.log"
+mkdir -p "$(dirname -- "$log_file")"
+log_failure() { printf '%s\n' "$*" | tee -a "$log_file" >&2; }
 
-cd "$(find ~/NikoRice/RiceFiles/ -name "lightdm-gtk-greeter.conf" -printf '%h' -quit)"
-
-cp -r baggrunde kommandoer.txt VPN .Xressources ~/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} cp -r baggrunde kommandoer VPN .Xressources ~/"
-else
-    echo -e "${RED}[FAILED]${WHITE} cp -r baggrunde kommandoer VPN .Xressources ~/" | tee -a "~/NikoRice/AutoRice_Install.log"
+# Install Oh My Zsh only when it is missing; use the current upstream project.
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    if command -v curl >/dev/null 2>&1; then
+        installer="$(mktemp)"
+        if curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$installer"; then
+            RUNZSH=no CHSH=no sh "$installer" --unattended || log_failure 'Oh My Zsh installation failed.'
+        else
+            log_failure 'Could not download the Oh My Zsh installer.'
+        fi
+        rm -f -- "$installer"
+    else
+        log_failure 'curl is unavailable; skipping Oh My Zsh installation.'
+    fi
 fi
 
-if [[ $(find /home/ -path ~/NikoRice -prune -o -name ".config" | grep ".config") != null ]]; then
-    mkdir -p ~/.config/i3/
-    echo -e "${GREEN}[  OK  ]${WHITE} Created needed dir '~/.config/i3/'"
-else
-    echo -e "${GREEN}[  OK  ]${WHITE} dir '~/.config/i3/' already exists. Skipping."
+mkdir -p "$HOME/.config/i3" "$HOME/.config"
+copy_items=(baggrunde kommandoer.txt VPN .Xressources)
+for item in "${copy_items[@]}"; do
+    if [[ -e "$RICE_DIR/$item" ]]; then
+        cp -a -- "$RICE_DIR/$item" "$HOME/" || log_failure "Could not copy $item into $HOME."
+    else
+        log_failure "Missing installer file: $RICE_DIR/$item"
+    fi
+done
+
+cp -a -- "$RICE_DIR/config" "$HOME/.config/i3/config" || log_failure 'Could not install the i3 config.'
+cp -a -- "$RICE_DIR/scripts" "$HOME/.config/" || log_failure 'Could not install the scripts.'
+if [[ -d "$RICE_DIR/files-dell-bios-fan-control" ]]; then
+    cp -a -- "$RICE_DIR/files-dell-bios-fan-control" "$HOME/" || log_failure 'Could not copy Dell fan-control files.'
 fi
 
-cp -r config ~/.config/i3/; cp -r scripts ~/.config/; cp -r files-dell-bios-fan-control ~/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} cp -r config ~/.config/i3/; cp -r .config/scripts ~/.config/; cp -r files-dell-bios-fan-control ~/"
+# Keep any existing shell configuration instead of deleting it.
+if [[ -e "$HOME/.zshrc" ]]; then
+    cp -a -- "$HOME/.zshrc" "$HOME/.zshrc.bak.$(date +%Y%m%d%H%M%S)"
+fi
+cp -a -- "$RICE_DIR/.zshrc" "$HOME/.zshrc" || log_failure 'Could not install .zshrc.'
+
+# pipx creates an isolated environment and avoids Ubuntu's PEP 668 restriction
+# on installing packages into the system-managed Python environment.
+export PATH="$HOME/.local/bin:$PATH"
+if command -v pipx >/dev/null 2>&1; then
+    if ! pipx install pywal; then
+        pipx upgrade pywal || log_failure 'Could not install pywal with pipx.'
+    fi
 else
-    echo -e "${RED}[FAILED]${WHITE} cp -r config ~/.config/i3/; cp -r .config/scripts ~/.config/; cp -r files-dell-bios-fan-control ~/" | tee -a "~/NikoRice/AutoRice_Install.log"
+    log_failure 'pipx is unavailable. Install python3-pipx, then run: pipx install pywal'
 fi
 
-cd "$(find ~/NikoRice/RiceFiles/ -name "lightdm-gtk-greeter.conf" -printf '%h' -quit)"
-
-cd
-
-pip3 install pywal
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} pip3 install pywal"
-else
-    echo -e "${RED}[FAILED]${WHITE} pip3 install pywal" | tee -a "~/NikoRice/AutoRice_Install.log"
+if command -v xrdb >/dev/null 2>&1 && [[ -f "$HOME/.Xressources" ]]; then
+    xrdb "$HOME/.Xressources" || log_failure 'xrdb could not load ~/.Xressources (this is normal outside an X11 session).'
+fi
+if command -v wal >/dev/null 2>&1 && [[ -f "$HOME/baggrunde/macro.png" ]]; then
+    wal -i "$HOME/baggrunde/macro.png" -a 80 || log_failure 'pywal could not set the wallpaper.'
 fi
 
-rm $(find /home/ -path ~/NikoRice -prune -o -name ".zshrc" | grep ".zshrc")
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} Removed old dir '~/.zshrc'"
-else
-    echo -e "${GREEN}[FAILED]${WHITE} Old dir '~/.zshrc' not found. All good." | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
-
-cd "$(find ~/NikoRice/RiceFiles/ -name "lightdm-gtk-greeter.conf" -printf '%h' -quit)"
-
-cp -r .zshrc ~/
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} Move file '.zshrc --> ~/'"
-else
-    echo -e "${RED}[FAILED]${WHITE} Move file '.zshrc --> ~/'" | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
-
-echo -e ""
-echo -e "Script will now set xrdb and setup wal.."
-echo -e ""
-sleep 5
-
-xrdb ~/.Xressources
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} execute command 'xrdb ~/.Xressources'"
-else
-    echo -e "${RED}[FAILED]${WHITE} execute command 'xrdb ~/.Xressources'" | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
-
-wal -i ~/baggrunde/macro.png -a 80
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}[  OK  ]${WHITE} execute command 'wal -i ~/baggrunde/macro.png -a 80'"
-else
-    echo -e "${RED}[FAILED]${WHITE} execute command 'wal -i ~/baggrunde/macro.png -a 80'" | tee -a "~/NikoRice/AutoRice_Install.log"
-fi
-
-echo -e ""
-echo -e "Please reboot system before running part 3!"
-echo -e "Remember to select i3 from the menu before logging in!"
-echo -e ""
-
-read -p "Reboot system before running 'AutoRice_part3.sh'. Will you do it now? (y/n)" -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Your computer will reboot in 5 seconds"
-        sleep 5
-        reboot
-elif [[ $REPLY =~ ^[Nn]$ ]]; then
-        echo "Please reboot your system later!"
-        sleep 1
-else
-  echo "Please reboot your system before running part 3!"
+printf '\nPart 2 is complete. Reboot and select i3 at the login screen before running part 3.\n'
+read -r -p 'Reboot now? (y/n) ' answer
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+    sudo systemctl reboot
 fi

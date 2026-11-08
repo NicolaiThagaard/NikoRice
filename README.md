@@ -1,65 +1,39 @@
-# Ubuntu Server 18.04 and 20.04 ONLY!		              
+# Ubuntu desktop installer (i3/X11)
 
-This is a auto-ricer that changes the look of your Ubuntu Server 18.04 to make a more minimalistic terminal-based desktop enviorment.
-This script uses the i3 Window Manager as a template and ZSH combined with Oh-My-Zsh as shell.
-Testet on Ubuntu Server 18.04 and 20.04, but might work on other distros too, however, I haven't tested this.
+NikoRice installs an i3-based, terminal-focused desktop setup on Ubuntu. The scripts have been updated for current Ubuntu releases, but desktop package availability and LightDM support depend on the Ubuntu flavor and enabled repositories. The setup expects an X11 session; it does not replace or configure a Wayland GNOME session.
 
-### Important note: 
+The installer modifies your user configuration and installs system packages. Review the scripts before running them, and back up your existing configuration first. Run the scripts from the cloned repository; they now locate `RiceFiles` relative to the script, so the repository does not need to be at `~/NikoRice`.
 
-This script assumes you have a fresh install of Ubuntu Server 18.04 or 20.04 and nothing else!
+## Install
 
-#### Download:
-
-```
-git clone https://github.com/NicolaiThagaard/NikoRice.git 
-```
-#### INSTALL:
-
-Move folder "NikoRice/NikoRice --> /home/your_user_name/"
-
-Run "AutoRice.sh"-script 1, 2 and 3 from your home folder:
-
-```
-bash ./NikoRice/AutoRice_part1.sh
-```
-```
-bash ./NikoRice/AutoRice_part2.sh
-```
-Run part 3 after a reboot. (The script will tell you).
-```
-bash ./NikoRice/AutoRice_part3.sh
-```
- 
-A reboot is needed when the script has finished. 
-The script will ask you in the prompt.
-Everything is now installed.
-
-In case of failures, check the log file.
-The script will tell you in the prompt.
-The log file can be found here:
-
-```
-x@Ubuntu:~$ cat ~/NikoRice/AutoRice_Install.log
+```bash
+git clone https://github.com/NicolaiThagaard/NikoRice.git
+cd NikoRice
+bash ./AutoRice_part1.sh
 ```
 
-No log file? No errors!
+Part 1 uses `sudo` to update apt metadata and install available dependencies. It does not upgrade the entire operating system. Some packages (for example VirtualBox or `rar`) may not be available in every Ubuntu repository configuration; unavailable optional packages are reported and skipped.
 
-#### DONE! 
+Run part 2 as your normal user:
 
-If LightDM does not work (you see the regular Ubuntu login screen):
+```bash
+bash ./AutoRice_part2.sh
+```
 
-On the lock screen, tap the Ubuntu icon just above the password bar.
-Here you have to choose between "i3" and "i3-debug". Select "i3".
-If "i3" cannot be selected then select "i3 debug", go back,
-and now select "i3" again.
-You can now log in.
+It backs up an existing `~/.zshrc`, installs the user configuration, and installs pywal with `pipx` in an isolated Python environment. If the reboot prompt is declined, reboot manually and select **i3** (an X11 session) at the login screen.
 
+After logging in to i3, run part 3 as your normal user:
 
-#### EKSTRA NOTES:
+```bash
+bash ./AutoRice_part3.sh
+```
 
-See ~/.config/scripts for a variety of scripts.
-See ~/baggrunde for a variety of background images.
-See commands.txt for a long list of useful commands.
-See folder VPN for VPN connectivity, excl. user and passwd.
+Part 3 uses `sudo` for system configuration, then offers to set Zsh as the default shell. Reboot when prompted to finish.
 
-The rest of the "RiceFiles" folder is used for configuration.
+Install errors are appended to `~/NikoRice/AutoRice_Install.log` when that directory exists; the scripts print warnings directly as well. If the setup fails, include the failing command and its output when reporting the problem.
+
+## Notes
+
+- LightDM is optional for the system configuration step; if it is not installed, its greeter configuration is skipped.
+- Some bundled scripts are hardware-specific (for example, Dell fan control) and should only be used on supported hardware.
+- `RiceFiles/scripts` contains the helper scripts and `RiceFiles/baggrunde` contains wallpapers.
