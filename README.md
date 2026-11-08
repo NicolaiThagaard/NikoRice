@@ -12,7 +12,7 @@ cd NikoRice
 bash ./AutoRice.sh --unattended
 ```
 
-The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
+The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It prefers Ubuntu's `python3-pipx` package, but if that package is unavailable it bootstraps pipx in a dedicated Python virtual environment using `python3-venv`. It does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
 
 Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. It also repairs ownership on deployed home-directory files, including files left root-owned by earlier install attempts. Do not run it with `sudo`; it requests sudo only for package and system-file operations. It deploys `RiceFiles/config` and `RiceFiles/.zshrc` as stored in the repository. Some optional packages may be unavailable in the enabled Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
 

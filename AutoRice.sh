@@ -45,8 +45,9 @@ sudo -v
 log "Installing dependencies on ${PRETTY_NAME:-Ubuntu}. This may take a while."
 sudo apt-get update
 
-required=(git feh xorg lightdm python3-pipx i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
-optional=(fonts-hack-ttf virtualbox autoconf rar unrar lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev)
+# python3-venv is used to bootstrap pipx if the Ubuntu package is unavailable.
+required=(git feh xorg lightdm python3-venv i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
+optional=(python3-pipx fonts-hack-ttf virtualbox autoconf rar unrar lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev)
 
 install_packages() {
     local package
@@ -137,7 +138,19 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     rm -f -- "$installer"
 fi
 
-export PATH="$HOME/.local/bin:$PATH"
+# Prefer Ubuntu's pipx package, but bootstrap it in an isolated virtualenv if
+# python3-pipx is missing from this Ubuntu release or its enabled repositories.
+export PATH="$HOME/.local/bin:$HOME/.local/share/niko-pipx/bin:$PATH"
+if ! command -v pipx >/dev/null 2>&1; then
+    bootstrap="$HOME/.local/share/niko-pipx"
+    if [[ ! -x "$bootstrap/bin/pipx" ]]; then
+        if ! python3 -m venv "$bootstrap"; then
+            fail 'Could not create the pipx bootstrap environment. Ensure python3-venv is installed.'
+        fi
+        "$bootstrap/bin/python" -m pip install --upgrade pip pipx || fail 'Could not bootstrap pipx in the isolated virtual environment.'
+    fi
+    export PATH="$bootstrap/bin:$PATH"
+fi
 if command -v pipx >/dev/null 2>&1; then
     if ! pipx list --short 2>/dev/null | grep -q '^pywal '; then
         pipx install pywal || { warn 'Could not install pywal with pipx.'; printf 'Could not install pywal with pipx.\n' >> "$LOG_FILE"; }
