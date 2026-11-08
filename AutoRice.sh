@@ -10,9 +10,7 @@ UNATTENDED=0
 
 for arg in "$@"; do
     case "$arg" in
-        --unattended)
-            UNATTENDED=1
-            ;;
+        --unattended) UNATTENDED=1 ;;
         --help|-h)
             echo "Usage: bash ./AutoRice.sh [--unattended]"
             exit 0
@@ -37,12 +35,12 @@ fail() { printf '[NikoRice] ERROR: %s\n' "$*" >&2; exit 1; }
 command -v sudo >/dev/null 2>&1 || fail 'sudo is required.'
 
 mkdir -p "$(dirname -- "$LOG_FILE")"
+USER_ID="$(id -u)"
+GROUP_ID="$(id -g)"
 
 if [[ "$UNATTENDED" -eq 1 ]]; then
     export DEBIAN_FRONTEND=noninteractive
-    sudo -n true >/dev/null 2>&1 || log 'sudo password required; please authenticate once to continue.'
 fi
-
 sudo -v
 log "Installing dependencies on ${PRETTY_NAME:-Ubuntu}. This may take a while."
 sudo apt-get update
@@ -76,53 +74,67 @@ install_packages() {
 install_packages "${required[@]}"
 install_packages "${optional[@]}"
 
+# Earlier installer runs (or manual sudo copies) may have left root-owned files
+# in the user's home. Use sudo only to back up/replace the exact destination,
+# then restore ownership to the invoking user. Never use cp -a for deployment:
+# that can retain stale root ownership and cause later 'Permission denied'.
 backup_if_present() {
     local path="$1"
-    if [[ -e "$path" || -L "$path" ]]; then
-        local backup="${path}.niko-backup.$(date +%Y%m%d%H%M%S)"
-        cp -a -- "$path" "$backup"
+    if sudo test -e "$path" || sudo test -L "$path"; then
+        local backup="${path}.niko-backup.$(date +%Y%m%d%H%M%S).$$"
+        sudo cp -a -- "$path" "$backup"
+        sudo chown -R "$USER_ID:$GROUP_ID" "$backup"
         log "Backed up $path to $backup"
     fi
 }
 
-mkdir -p "$HOME/.config/i3" "$HOME/.config"
+copy_user_file() {
+    local source="$1" target="$2"
+    backup_if_present "$target"
+    sudo install -D -m 0644 -o "$USER_ID" -g "$GROUP_ID" "$source" "$target"
+}
+
+copy_user_dir() {
+    local source="$1" target="$2"
+    backup_if_present "$target"
+    sudo rm -rf -- "$target"
+    sudo install -d -o "$USER_ID" -g "$GROUP_ID" "$(dirname -- "$target")"
+    sudo cp -R -- "$source" "$target"
+    sudo chown -R "$USER_ID:$GROUP_ID" "$target"
+}
+
+sudo install -d -o "$USER_ID" -g "$GROUP_ID" "$HOME/.config/i3" "$HOME/.config"
 for item in baggrunde kommandoer.txt VPN .Xressources; do
     if [[ -e "$RICE_DIR/$item" ]]; then
-        backup_if_present "$HOME/$item"
-        cp -a -- "$RICE_DIR/$item" "$HOME/"
+        if [[ -d "$RICE_DIR/$item" ]]; then
+            copy_user_dir "$RICE_DIR/$item" "$HOME/$item"
+        else
+            copy_user_file "$RICE_DIR/$item" "$HOME/$item"
+        fi
     else
         warn "Missing RiceFiles/$item; skipped."
     fi
 done
 
-for pair in 'config:.config/i3/config' '.zshrc:.zshrc'; do
-    source_name="${pair%%:*}"
-    target_rel="${pair#*:}"
-    target="$HOME/$target_rel"
-    [[ -f "$RICE_DIR/$source_name" ]] || fail "Missing RiceFiles/$source_name"
-    backup_if_present "$target"
-    install -D -m 0644 "$RICE_DIR/$source_name" "$target"
-done
-
+copy_user_file "$RICE_DIR/config" "$HOME/.config/i3/config"
+copy_user_file "$RICE_DIR/.zshrc" "$HOME/.zshrc"
 if [[ -d "$RICE_DIR/scripts" ]]; then
-    backup_if_present "$HOME/.config/scripts"
-    cp -a -- "$RICE_DIR/scripts" "$HOME/.config/"
+    copy_user_dir "$RICE_DIR/scripts" "$HOME/.config/scripts"
 else
     warn 'RiceFiles/scripts not found; helper scripts were skipped.'
 fi
-
 if [[ -d "$RICE_DIR/files-dell-bios-fan-control" ]]; then
-    backup_if_present "$HOME/files-dell-bios-fan-control"
-    cp -a -- "$RICE_DIR/files-dell-bios-fan-control" "$HOME/"
+    copy_user_dir "$RICE_DIR/files-dell-bios-fan-control" "$HOME/files-dell-bios-fan-control"
 fi
 
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    if command -v curl >/dev/null 2>&1 && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/niko-ohmyzsh-install.sh; then
-        RUNZSH=no CHSH=no sh /tmp/niko-ohmyzsh-install.sh --unattended || warn 'Oh My Zsh installation failed; Zsh can still be used without it.'
-        rm -f /tmp/niko-ohmyzsh-install.sh
+    installer="$(mktemp)"
+    if command -v curl >/dev/null 2>&1 && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o "$installer"; then
+        RUNZSH=no CHSH=no sh "$installer" --unattended || warn 'Oh My Zsh installation failed; Zsh can still be used without it.'
     else
         warn 'Could not download Oh My Zsh; skipped.'
     fi
+    rm -f -- "$installer"
 fi
 
 export PATH="$HOME/.local/bin:$PATH"
@@ -163,10 +175,5 @@ if command -v zsh >/dev/null 2>&1; then
     fi
 fi
 
-log 'Setup is complete.'
-if [[ "$UNATTENDED" -eq 1 ]]; then
-    log 'Unattended mode was used. No reboot prompt was shown.'
-    log 'Log out and select i3 (X11) from the login screen. Reboot when ready.'
-else
-    log 'Log out and select i3 (X11) from the login screen. Reboot when ready.'
-fi
+log 'Setup is complete. User configuration files are owned by the current user.'
+log 'Log out and choose the i3 session from the login screen. Reboot if needed; the installer does not reboot automatically.'

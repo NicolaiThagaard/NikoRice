@@ -12,13 +12,13 @@ cd NikoRice
 bash ./AutoRice.sh --unattended
 ```
 
-`AutoRice.sh` performs the package installation, deploys the repository's existing `RiceFiles` configuration, installs the system config files and pywal, and configures Zsh when available. It runs without interactive prompts in `--unattended` mode, asks for sudo only when required, and does not reboot automatically. When it finishes, log out and select **i3** (X11) at the login screen; reboot if needed.
+The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
 
-The installer backs up existing files before replacing them, with names ending in `.niko-backup.<timestamp>`. It deploys `RiceFiles/config` and `RiceFiles/.zshrc` as stored in the repository; customize those source files before running the installer if you want different settings. Some optional packages are unavailable in certain Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
+Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. It also repairs ownership on deployed home-directory files, including files left root-owned by earlier install attempts. Do not run it with `sudo`; it requests sudo only for package and system-file operations. It deploys `RiceFiles/config` and `RiceFiles/.zshrc` as stored in the repository. Some optional packages may be unavailable in the enabled Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
 
-Review scripts before running them. The installer uses apt to install software and sudo to write system configuration. It does not upgrade the whole operating system. Installation warnings are recorded in `~/NikoRice/AutoRice_Install.log`.
+Review scripts before running them. The installer uses apt to install software and sudo to write system configuration. It does not upgrade the whole operating system. Warnings are recorded in `~/NikoRice/AutoRice_Install.log`.
 
-The older `AutoRice_part1.sh`, `AutoRice_part2.sh`, and `AutoRice_part3.sh` scripts remain available, but a fresh install should use the single `AutoRice.sh` script.
+The older `AutoRice_part1.sh`, `AutoRice_part2.sh`, and `AutoRice_part3.sh` scripts remain available, but a fresh install or repair should use the single `AutoRice.sh` script.
 
 ## Notes
 
