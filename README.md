@@ -9,10 +9,10 @@ Clone the repository and run the installer as your normal user:
 ```bash
 git clone https://github.com/NicolaiThagaard/NikoRice.git
 cd NikoRice
-bash ./AutoRice.sh
+bash ./AutoRice.sh --unattended
 ```
 
-`AutoRice.sh` performs the package installation, deploys the repository's existing `RiceFiles` configuration, installs the system config files and pywal, and configures Zsh when available. It asks for sudo authentication as needed, but otherwise runs without interactive install/reboot prompts. It does **not** reboot automatically. When it finishes, log out and select **i3** (X11) at the login screen; reboot if needed.
+`AutoRice.sh` performs the package installation, deploys the repository's existing `RiceFiles` configuration, installs the system config files and pywal, and configures Zsh when available. It runs without interactive prompts in `--unattended` mode, asks for sudo only when required, and does not reboot automatically. When it finishes, log out and select **i3** (X11) at the login screen; reboot if needed.
 
 The installer backs up existing files before replacing them, with names ending in `.niko-backup.<timestamp>`. It deploys `RiceFiles/config` and `RiceFiles/.zshrc` as stored in the repository; customize those source files before running the installer if you want different settings. Some optional packages are unavailable in certain Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
 

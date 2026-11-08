@@ -1,11 +1,29 @@
 #!/usr/bin/env bash
 # One-command installer for the NikoRice i3/X11 setup.
-# Run from the cloned repository as your normal user: bash ./AutoRice.sh
+# Use: bash ./AutoRice.sh [--unattended]
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 RICE_DIR="$SCRIPT_DIR/RiceFiles"
 LOG_FILE="$HOME/NikoRice/AutoRice_Install.log"
+UNATTENDED=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --unattended)
+            UNATTENDED=1
+            ;;
+        --help|-h)
+            echo "Usage: bash ./AutoRice.sh [--unattended]"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $arg" >&2
+            echo "Usage: bash ./AutoRice.sh [--unattended]" >&2
+            exit 1
+            ;;
+    esac
+done
 
 log() { printf '[NikoRice] %s\n' "$*"; }
 warn() { printf '[NikoRice] WARNING: %s\n' "$*" >&2; }
@@ -20,13 +38,15 @@ command -v sudo >/dev/null 2>&1 || fail 'sudo is required.'
 
 mkdir -p "$(dirname -- "$LOG_FILE")"
 
-# Ensure sudo credentials are available before starting package installation.
+if [[ "$UNATTENDED" -eq 1 ]]; then
+    export DEBIAN_FRONTEND=noninteractive
+    sudo -n true >/dev/null 2>&1 || log 'sudo password required; please authenticate once to continue.'
+fi
+
 sudo -v
 log "Installing dependencies on ${PRETTY_NAME:-Ubuntu}. This may take a while."
 sudo apt-get update
 
-# Required desktop/runtime dependencies. Separate optional packages so a package
-# absent from a particular Ubuntu release does not abort the whole installation.
 required=(git feh xorg lightdm python3-pipx i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
 optional=(fonts-hack-ttf virtualbox autoconf rar unrar lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev)
 
@@ -41,11 +61,9 @@ install_packages() {
             missing+=("$package")
         else
             log "Installing $package"
-            if ! sudo apt-get install -y --no-install-recommends "$package"; then
-                if [[ " $* " == *" $package "* ]]; then
-                    warn "Could not install package $package; see apt output above."
-                    printf 'Could not install package: %s\n' "$package" >> "$LOG_FILE"
-                fi
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$package"; then
+                warn "Could not install package $package; see apt output above."
+                printf 'Could not install package: %s\n' "$package" >> "$LOG_FILE"
             fi
         fi
     done
@@ -58,8 +76,6 @@ install_packages() {
 install_packages "${required[@]}"
 install_packages "${optional[@]}"
 
-# User configuration: back up existing files, then deploy the repository's
-# RiceFiles verbatim; do not rewrite the user's custom i3 or shell config.
 backup_if_present() {
     local path="$1"
     if [[ -e "$path" || -L "$path" ]]; then
@@ -88,7 +104,6 @@ for pair in 'config:.config/i3/config' '.zshrc:.zshrc'; do
     install -D -m 0644 "$RICE_DIR/$source_name" "$target"
 done
 
-# Replace helper scripts as a directory, retaining a backup of an existing one.
 if [[ -d "$RICE_DIR/scripts" ]]; then
     backup_if_present "$HOME/.config/scripts"
     cp -a -- "$RICE_DIR/scripts" "$HOME/.config/"
@@ -101,8 +116,6 @@ if [[ -d "$RICE_DIR/files-dell-bios-fan-control" ]]; then
     cp -a -- "$RICE_DIR/files-dell-bios-fan-control" "$HOME/"
 fi
 
-# Oh My Zsh is optional. Its official installer is downloaded and run as the
-# user, never as root. Existing installations are left untouched.
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     if command -v curl >/dev/null 2>&1 && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/niko-ohmyzsh-install.sh; then
         RUNZSH=no CHSH=no sh /tmp/niko-ohmyzsh-install.sh --unattended || warn 'Oh My Zsh installation failed; Zsh can still be used without it.'
@@ -112,8 +125,6 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     fi
 fi
 
-# Install pywal in pipx's isolated environment (Ubuntu marks system Python as
-# externally managed). Use the upstream PyPI package needed by `wal` commands.
 export PATH="$HOME/.local/bin:$PATH"
 if command -v pipx >/dev/null 2>&1; then
     if ! pipx list --short 2>/dev/null | grep -q '^pywal '; then
@@ -123,13 +134,11 @@ else
     warn 'pipx is unavailable; pywal was skipped.'
 fi
 
-# System files used by the existing RiceFiles/config. Install only when present.
 if [[ -f "$RICE_DIR/i3status.conf" ]]; then
     sudo install -D -m 0644 "$RICE_DIR/i3status.conf" /etc/i3status.conf
 fi
 if [[ -f "$RICE_DIR/lightdm-gtk-greeter.conf" ]]; then
     if [[ -d /etc/lightdm ]]; then
-        # Substitute the user's actual home directory for the greeter config.
         temp_config="$(mktemp)"
         sed "s|\${HOME}|$HOME|g" "$RICE_DIR/lightdm-gtk-greeter.conf" > "$temp_config"
         sudo install -D -m 0644 "$temp_config" /etc/lightdm/lightdm-gtk-greeter.conf
@@ -139,15 +148,11 @@ if [[ -f "$RICE_DIR/lightdm-gtk-greeter.conf" ]]; then
     fi
 fi
 
-# Do not overwrite the system i3lock package with a bundled legacy binary.
-# If one is supplied, install separately so the system binary remains intact.
 if [[ -f "$RICE_DIR/i3lock" ]]; then
     sudo install -D -m 0755 "$RICE_DIR/i3lock" /usr/local/bin/i3lock-rice
     warn 'Bundled i3lock installed as i3lock-rice; existing config still calls i3lock. Verify the bundled binary before using its custom options.'
 fi
 
-# Set Zsh without prompting when available. This may ask for sudo only if the
-# user's credentials have expired.
 if command -v zsh >/dev/null 2>&1; then
     zsh_path="$(command -v zsh)"
     if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$zsh_path" ]]; then
@@ -158,5 +163,10 @@ if command -v zsh >/dev/null 2>&1; then
     fi
 fi
 
-log 'Setup is complete. Log out and choose the i3 session (X11) at the login screen.'
-log 'Reboot or log out/in to apply the session and shell changes. No automatic reboot was performed.'
+log 'Setup is complete.'
+if [[ "$UNATTENDED" -eq 1 ]]; then
+    log 'Unattended mode was used. No reboot prompt was shown.'
+    log 'Log out and select i3 (X11) from the login screen. Reboot when ready.'
+else
+    log 'Log out and select i3 (X11) from the login screen. Reboot when ready.'
+fi
