@@ -12,6 +12,6 @@ bash ./AutoRice.sh --unattended
 
 The installer installs packages, deploys the existing `RiceFiles` configuration and scripts, installs system config files and pywal, and configures Zsh when available. It uses DejaVu Sans Mono and verifies pywal before reporting success.
 
-The i3 setup starts picom with a dedicated NikoRice configuration. URxvt is configured for a 32-bit visual, and picom applies 80% opacity to URxvt windows (including the Mod+Enter terminal). Other windows keep their normal opacity. The wallpaper/color setup remains handled by pywal.
+URxvt uses a 32-bit visual and its own transparent background, so the text glyphs stay opaque instead of fading with the entire window. Picom blurs the background behind the terminal and URxvt shading darkens it slightly for readability. There is intentionally no whole-window opacity rule. Blur requires a working GLX-capable picom compositor in an X11 session.
 
 Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. Do not run it with `sudo`; it requests sudo only for package and system-file operations. The installer does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen.

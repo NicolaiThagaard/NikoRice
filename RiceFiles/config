@@ -7,7 +7,7 @@
 set $mod Mod4
 font pango:DejaVu Sans Mono 8
 
-# picom supplies real window transparency; its rule sets URxvt to 80% opacity.
+# picom composites the translucent URxvt background and blurs what is behind it.
 exec --no-startup-id bash ${HOME}/.config/scripts/picom-start.sh
 exec --no-startup-id bash ${HOME}/.config/scripts/loginscript.sh
 exec --no-startup-id setxkbmap dk
