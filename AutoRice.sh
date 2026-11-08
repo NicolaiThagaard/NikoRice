@@ -45,7 +45,7 @@ sudo -v
 log "Installing dependencies on ${PRETTY_NAME:-Ubuntu}. This may take a while."
 sudo apt-get update
 
-# python3-venv is used to bootstrap pipx if the Ubuntu package is unavailable.
+# python3-venv is required to bootstrap pipx if the Ubuntu package is unavailable.
 required=(git feh xorg lightdm python3-venv i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
 optional=(python3-pipx fonts-hack-ttf virtualbox autoconf rar unrar lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev)
 
@@ -77,8 +77,7 @@ install_packages "${optional[@]}"
 
 # Earlier installer runs (or manual sudo copies) may have left root-owned files
 # in the user's home. Use sudo only to back up/replace the exact destination,
-# then restore ownership to the invoking user. Never use cp -a for deployment:
-# that can retain stale root ownership and cause later 'Permission denied'.
+# then restore ownership to the invoking user. Never use cp -a for deployment.
 backup_if_present() {
     local path="$1"
     if sudo test -e "$path" || sudo test -L "$path"; then
@@ -117,7 +116,15 @@ for item in baggrunde kommandoer.txt VPN .Xressources; do
     fi
 done
 
-copy_user_file "$RICE_DIR/config" "$HOME/.config/i3/config"
+# Install the custom i3 config with portable paths and the current compositor.
+i3_config="$(mktemp)"
+sed \
+    -e 's/^[[:space:]]*exec --no-startup-id compton$/exec --no-startup-id picom/' \
+    -e "s|/home/a/.config/scripts/|$HOME/.config/scripts/|g" \
+    "$RICE_DIR/config" > "$i3_config"
+copy_user_file "$i3_config" "$HOME/.config/i3/config"
+rm -f -- "$i3_config"
+
 copy_user_file "$RICE_DIR/.zshrc" "$HOME/.zshrc"
 if [[ -d "$RICE_DIR/scripts" ]]; then
     copy_user_dir "$RICE_DIR/scripts" "$HOME/.config/scripts"
@@ -144,19 +151,24 @@ export PATH="$HOME/.local/bin:$HOME/.local/share/niko-pipx/bin:$PATH"
 if ! command -v pipx >/dev/null 2>&1; then
     bootstrap="$HOME/.local/share/niko-pipx"
     if [[ ! -x "$bootstrap/bin/pipx" ]]; then
-        if ! python3 -m venv "$bootstrap"; then
-            fail 'Could not create the pipx bootstrap environment. Ensure python3-venv is installed.'
-        fi
+        python3 -m venv "$bootstrap" || fail 'Could not create pipx bootstrap environment. Ensure python3-venv is installed.'
         "$bootstrap/bin/python" -m pip install --upgrade pip pipx || fail 'Could not bootstrap pipx in the isolated virtual environment.'
     fi
     export PATH="$bootstrap/bin:$PATH"
 fi
 if command -v pipx >/dev/null 2>&1; then
-    if ! pipx list --short 2>/dev/null | grep -q '^pywal '; then
-        pipx install pywal || { warn 'Could not install pywal with pipx.'; printf 'Could not install pywal with pipx.\n' >> "$LOG_FILE"; }
+    # A stale launcher without its pywal module can exist after an interrupted
+    # pipx install. Force-reinstall and verify the actual command before success.
+    if ! command -v wal >/dev/null 2>&1 || ! wal --help >/dev/null 2>&1; then
+        pipx install --force pywal || fail 'Could not install pywal; see the pipx error above.'
+    fi
+    hash -r
+    export PATH="$HOME/.local/bin:$PATH"
+    if ! command -v wal >/dev/null 2>&1 || ! wal --help >/dev/null 2>&1; then
+        fail 'pywal installation did not provide a working wal command.'
     fi
 else
-    warn 'pipx is unavailable; pywal was skipped.'
+    fail 'pipx is unavailable; cannot install pywal.'
 fi
 
 if [[ -f "$RICE_DIR/i3status.conf" ]]; then
@@ -188,5 +200,10 @@ if command -v zsh >/dev/null 2>&1; then
     fi
 fi
 
-log 'Setup is complete. User configuration files are owned by the current user.'
+# Validate syntax early so a broken config is not silently left for login time.
+if command -v i3 >/dev/null 2>&1; then
+    i3 -C -c "$HOME/.config/i3/config" || fail 'The installed i3 config failed validation; inspect its reported line.'
+fi
+
+log 'Setup is complete. i3 config uses picom and your actual home path; wal was verified working.'
 log 'Log out and choose the i3 session from the login screen. Reboot if needed; the installer does not reboot automatically.'

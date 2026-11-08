@@ -4,17 +4,17 @@ NikoRice installs an i3-based, terminal-focused desktop setup on Ubuntu. The set
 
 ## One-script installation
 
-Clone the repository and run the installer as your normal user:
-
 ```bash
 git clone https://github.com/NicolaiThagaard/NikoRice.git
 cd NikoRice
 bash ./AutoRice.sh --unattended
 ```
 
-The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It prefers Ubuntu's `python3-pipx` package, but if that package is unavailable it bootstraps pipx in a dedicated Python virtual environment using `python3-venv`. It does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
+The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It prefers Ubuntu's `python3-pipx` package, but if that package is unavailable it bootstraps pipx in a dedicated Python virtual environment using `python3-venv`. It verifies that `wal --help` works before reporting success, and repairs stale pywal launchers by reinstalling pywal. The installed i3 config preserves the repository's settings while replacing the obsolete `compton` startup command with `picom` and the old `/home/a` script path with the current user's home directory.
 
-Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. It also repairs ownership on deployed home-directory files, including files left root-owned by earlier install attempts. Do not run it with `sudo`; it requests sudo only for package and system-file operations. It deploys `RiceFiles/config` and `RiceFiles/.zshrc` as stored in the repository. Some optional packages may be unavailable in the enabled Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
+Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. It also repairs ownership on deployed home-directory files, including files left root-owned by earlier attempts. Do not run it with `sudo`; it requests sudo only for package and system-file operations. Some optional packages may be unavailable in the enabled Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
+
+The installer does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
 
 Review scripts before running them. The installer uses apt to install software and sudo to write system configuration. It does not upgrade the whole operating system. Warnings are recorded in `~/NikoRice/AutoRice_Install.log`.
 
