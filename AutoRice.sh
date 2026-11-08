@@ -45,8 +45,9 @@ sudo -v
 log "Installing dependencies on ${PRETTY_NAME:-Ubuntu}. This may take a while."
 sudo apt-get update
 
-# python3-venv is required to bootstrap pipx if the Ubuntu package is unavailable.
-required=(git feh xorg lightdm python3-venv i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
+# DejaVu Sans Mono is the supported default font used by the configs.
+# python3-venv bootstraps pipx if the Ubuntu package is unavailable.
+required=(git feh xorg lightdm python3-venv fonts-dejavu-core i3 i3lock build-essential make zsh rofi picom neofetch scrot imagemagick rxvt-unicode libev-dev libxcb-composite0 libxcb-composite0-dev libxcb-xinerama0 libxcb-randr0 libxcb-xinerama0-dev zip unzip libxcb-xkb-dev libxcb-image0-dev libxcb-util-dev libxkbcommon-x11-dev lightdm-gtk-greeter arandr xbacklight x11-xserver-utils x11-utils curl)
 optional=(python3-pipx fonts-hack-ttf virtualbox autoconf rar unrar lightdm-gtk-greeter-settings libjpeg-dev libpam0g-dev)
 
 install_packages() {
@@ -75,9 +76,6 @@ install_packages() {
 install_packages "${required[@]}"
 install_packages "${optional[@]}"
 
-# Earlier installer runs (or manual sudo copies) may have left root-owned files
-# in the user's home. Use sudo only to back up/replace the exact destination,
-# then restore ownership to the invoking user. Never use cp -a for deployment.
 backup_if_present() {
     local path="$1"
     if sudo test -e "$path" || sudo test -L "$path"; then
@@ -116,11 +114,13 @@ for item in baggrunde kommandoer.txt VPN .Xressources; do
     fi
 done
 
-# Install the custom i3 config with portable paths and the current compositor.
+# Install custom i3 config with portable paths, current compositor and an
+# installed, broadly available font family.
 i3_config="$(mktemp)"
 sed \
     -e 's/^[[:space:]]*exec --no-startup-id compton$/exec --no-startup-id picom/' \
     -e "s|/home/a/.config/scripts/|$HOME/.config/scripts/|g" \
+    -e 's/font pango:Hack 8/font pango:DejaVu Sans Mono 8/' \
     "$RICE_DIR/config" > "$i3_config"
 copy_user_file "$i3_config" "$HOME/.config/i3/config"
 rm -f -- "$i3_config"
@@ -145,8 +145,6 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     rm -f -- "$installer"
 fi
 
-# Prefer Ubuntu's pipx package, but bootstrap it in an isolated virtualenv if
-# python3-pipx is missing from this Ubuntu release or its enabled repositories.
 export PATH="$HOME/.local/bin:$HOME/.local/share/niko-pipx/bin:$PATH"
 if ! command -v pipx >/dev/null 2>&1; then
     bootstrap="$HOME/.local/share/niko-pipx"
@@ -157,8 +155,6 @@ if ! command -v pipx >/dev/null 2>&1; then
     export PATH="$bootstrap/bin:$PATH"
 fi
 if command -v pipx >/dev/null 2>&1; then
-    # A stale launcher without its pywal module can exist after an interrupted
-    # pipx install. Force-reinstall and verify the actual command before success.
     if ! command -v wal >/dev/null 2>&1 || ! wal --help >/dev/null 2>&1; then
         pipx install --force pywal || fail 'Could not install pywal; see the pipx error above.'
     fi
@@ -200,10 +196,9 @@ if command -v zsh >/dev/null 2>&1; then
     fi
 fi
 
-# Validate syntax early so a broken config is not silently left for login time.
 if command -v i3 >/dev/null 2>&1; then
     i3 -C -c "$HOME/.config/i3/config" || fail 'The installed i3 config failed validation; inspect its reported line.'
 fi
 
-log 'Setup is complete. i3 config uses picom and your actual home path; wal was verified working.'
+log 'Setup is complete. The i3 and URxvt configs use DejaVu Sans Mono, installed by this script.'
 log 'Log out and choose the i3 session from the login screen. Reboot if needed; the installer does not reboot automatically.'

@@ -1,6 +1,6 @@
-URxvt.font:         xft:Hack-Regular:pixelsize=14,xft:Symbola
-URxvt.boldFont:     xft:Hack-Bold:pixelsize=14:weight=bold,xft:Symbola
-URxvt.italicFont:   xft:Hack-RegularOblique:pixelsize=14:slant=italic,xft:Symbola
+URxvt.font:         xft:DejaVu Sans Mono:pixelsize=14,xft:Symbola
+URxvt.boldFont:     xft:DejaVu Sans Mono:style=Bold:pixelsize=14:weight=bold,xft:Symbola
+URxvt.italicFont:   xft:DejaVu Sans Mono:style=Oblique:pixelsize=14:slant=italic,xft:Symbola
 URxvt.scrollBar: false
 URxvt.scrollBar_right: false
 URxvt.scrollBar_floating: false
@@ -9,7 +9,7 @@ URxvt.perl-ext-common: default,selection-to-clipboard,pasta,matcher,keyboard-sel
 URxvt.keysym.M-u:     perl:url-select:select_next
 URxvt.url-launcher:   /usr/bin/chromium-browser
 URxvt.underlineURLs:  True
-URxvt.matcher.button: 1 
+URxvt.matcher.button: 1
 URxvt.keysym.M-Escape:perl:keyboard-select:activate
 URxvt.keysym.Control-Shift-V:     perl:pasta:paste
 URxvt.keysym.Control-Up:   \033[1;5A
