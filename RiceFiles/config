@@ -7,8 +7,8 @@
 set $mod Mod4
 font pango:DejaVu Sans Mono 8
 
-# picom replaces the discontinued compton compositor.
-exec --no-startup-id picom
+# picom supplies real window transparency; its rule sets URxvt to 80% opacity.
+exec --no-startup-id bash ${HOME}/.config/scripts/picom-start.sh
 exec --no-startup-id bash ${HOME}/.config/scripts/loginscript.sh
 exec --no-startup-id setxkbmap dk
 exec --no-startup-id bash ${HOME}/.config/scripts/wal-set.sh

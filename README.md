@@ -10,10 +10,8 @@ cd NikoRice
 bash ./AutoRice.sh --unattended
 ```
 
-The installer installs packages, deploys the existing `RiceFiles` configuration, installs system config files and pywal, and configures Zsh when available. It uses DejaVu Sans Mono for both i3 and URxvt and installs `fonts-dejavu-core`, avoiding dependence on Hack font package availability. It also repairs root-owned destination files, bootstraps pipx if needed, verifies `wal`, and adjusts old compositor/home-directory paths in the deployed i3 config.
+The installer installs packages, deploys the existing `RiceFiles` configuration and scripts, installs system config files and pywal, and configures Zsh when available. It uses DejaVu Sans Mono and verifies pywal before reporting success.
 
-Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. Do not run it with `sudo`; it requests sudo only for package and system-file operations. Some optional packages may be unavailable in the enabled Ubuntu repositories and will be reported/skipped. LightDM setup is skipped if LightDM is not installed.
+The i3 setup starts picom with a dedicated NikoRice configuration. URxvt is configured for a 32-bit visual, and picom applies 80% opacity to URxvt windows (including the Mod+Enter terminal). Other windows keep their normal opacity. The wallpaper/color setup remains handled by pywal.
 
-The installer does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen. Installing i3 does not automatically switch the current desktop session to i3.
-
-Warnings are recorded in `~/NikoRice/AutoRice_Install.log`. Review scripts before running them.
+Before replacing a destination, the installer creates a `.niko-backup.<timestamp>` backup. Do not run it with `sudo`; it requests sudo only for package and system-file operations. The installer does not reboot automatically. When it finishes, log out and select **i3** (X11) from the session menu on the login screen.

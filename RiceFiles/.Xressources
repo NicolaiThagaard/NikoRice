@@ -1,6 +1,8 @@
 URxvt.font:         xft:DejaVu Sans Mono:pixelsize=14,xft:Symbola
 URxvt.boldFont:     xft:DejaVu Sans Mono:style=Bold:pixelsize=14:weight=bold,xft:Symbola
 URxvt.italicFont:   xft:DejaVu Sans Mono:style=Oblique:pixelsize=14:slant=italic,xft:Symbola
+! Use a 32-bit visual so picom can composite real window opacity.
+URxvt.depth: 32
 URxvt.scrollBar: false
 URxvt.scrollBar_right: false
 URxvt.scrollBar_floating: false
